@@ -1,0 +1,405 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  AI6 Unit 5.W MVP workshop stack (Scale or Fail). Creates a 3-step pipeline:
+  Preprocess -> Embed (MiniLM-style simulated) -> Postprocess, orchestrated by AWS Step Functions,
+  with CloudWatch dashboard for observability.
+
+Parameters:
+  WorkshopName:
+    Type: String
+    Default: AI6-Unit5W-ScaleOrFail
+  SimulatedInferMs:
+    Type: Number
+    Default: 250
+    MinValue: 0
+    Description: "Adds deterministic latency to the Embed step to simulate model inference cost."
+  SageMakerModelDataBucket:
+    Type: String
+    Default: ""
+    Description: "S3 bucket containing the SageMaker model artifact model.tar.gz (provided by deploy script for going-further stack)."
+  SageMakerModelDataKey:
+    Type: String
+    Default: ""
+    Description: "S3 key for the SageMaker model artifact model.tar.gz (provided by deploy script for going-further stack)."
+  SageMakerCodeBucket:
+    Type: String
+    Default: ""
+    Description: "S3 bucket containing the SageMaker inference code bundle (source.tar.gz) (provided by deploy script)."
+  SageMakerCodeKey:
+    Type: String
+    Default: ""
+    Description: "S3 key for the SageMaker inference code bundle (source.tar.gz) (provided by deploy script)."
+  SageMakerMaxConcurrency:
+    Type: Number
+    Default: 2
+    MinValue: 1
+    MaxValue: 200
+    Description: "Serverless endpoint MaxConcurrency. Keep low to create an intentional scaling wall."
+
+Resources:
+  # ------------------------------------------------------------
+  # IAM
+  # ------------------------------------------------------------
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+
+  StepFunctionsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - states.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: InvokeWorkshopLambdas
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource:
+                  - !GetAtt PreprocessFunction.Arn
+                  - !GetAtt PostprocessFunction.Arn
+              - Effect: Allow
+                Action:
+                  - sagemaker:InvokeEndpoint
+                Resource: !Sub "arn:aws:sagemaker:${AWS::Region}:${AWS::AccountId}:endpoint/${EmbedEndpoint.EndpointName}"
+
+  SageMakerExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - sagemaker.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: ReadSageMakerArtifactsFromS3
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:ListBucket
+                Resource:
+                  - !Sub "arn:aws:s3:::${SageMakerModelDataBucket}"
+                  - !Sub "arn:aws:s3:::${SageMakerModelDataBucket}/*"
+                  - !Sub "arn:aws:s3:::${SageMakerCodeBucket}"
+                  - !Sub "arn:aws:s3:::${SageMakerCodeBucket}/*"
+
+  # ------------------------------------------------------------
+  # Lambda functions
+  # ------------------------------------------------------------
+  PreprocessFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: python3.11
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      MemorySize: 128
+      Timeout: 3
+      Code:
+        ZipFile: |
+          import json, time, re
+          MAX_CHARS = 5000
+          def handler(event, context):
+              start = time.time()
+              if not isinstance(event, dict):
+                  raise ValueError("Input must be a JSON object")
+              ticket_id = event.get("ticket_id", "T-UNKNOWN")
+              text = event.get("text", "")
+              if not isinstance(text, str):
+                  raise ValueError("text must be a string")
+              if len(text) > MAX_CHARS:
+                  raise ValueError(f"PayloadTooLarge: text length {len(text)} > {MAX_CHARS}")
+              clean = re.sub(r"\s+", " ", text.strip())
+              tokens = clean.split()
+              out = {
+                  "ticket_id": ticket_id,
+                  "text": clean,
+                  "token_count": len(tokens),
+                  "received_ts": int(time.time())
+              }
+              dur = int((time.time()-start)*1000)
+              print(json.dumps({"step":"preprocess","ticket_id":ticket_id,"duration_ms":dur,"token_count":out["token_count"]}))
+              return out
+
+  # ------------------------------------------------------------
+  # SageMaker (Embed / Model hosting) - going-further stack only
+  # ------------------------------------------------------------
+
+  EmbedModel:
+    Type: AWS::SageMaker::Model
+    Properties:
+      ExecutionRoleArn: !GetAtt SageMakerExecutionRole.Arn
+      PrimaryContainer:
+        Image: !Sub "683313688378.dkr.ecr.${AWS::Region}.amazonaws.com/sagemaker-scikit-learn:1.2-1-cpu-py3"
+        ModelDataUrl: !Sub "s3://${SageMakerModelDataBucket}/${SageMakerModelDataKey}"
+        Environment:
+          SIMULATED_INFER_MS: !Ref SimulatedInferMs
+          SAGEMAKER_PROGRAM: "inference.py"
+          SAGEMAKER_SUBMIT_DIRECTORY: !Sub "s3://${SageMakerCodeBucket}/${SageMakerCodeKey}"
+          SAGEMAKER_CONTAINER_LOG_LEVEL: "20"
+          SAGEMAKER_REGION: !Ref AWS::Region
+
+  EmbedEndpointConfig:
+    Type: AWS::SageMaker::EndpointConfig
+    Properties:
+      ProductionVariants:
+        - VariantName: AllTraffic
+          # Ref returns the Model ARN; EndpointConfig needs the ModelName (<= 63 chars).
+          ModelName: !GetAtt EmbedModel.ModelName
+          ServerlessConfig:
+            MaxConcurrency: !Ref SageMakerMaxConcurrency
+            MemorySizeInMB: 1024
+
+  EmbedEndpoint:
+    Type: AWS::SageMaker::Endpoint
+    Properties:
+      EndpointConfigName: !GetAtt EmbedEndpointConfig.EndpointConfigName
+  PostprocessFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: python3.11
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      MemorySize: 128
+      Timeout: 3
+      Code:
+        ZipFile: |
+          import json, time
+          def handler(event, context):
+              start = time.time()
+              if not isinstance(event, dict):
+                  raise ValueError("Input must be a JSON object")
+              ticket_id = event.get("ticket_id","T-UNKNOWN")
+              route = event.get("route","unknown")
+              score = float(event.get("route_score",0.0))
+              # Simple policy: some routes are more urgent; high similarity increases confidence.
+              urgent_routes = {"billing","delivery"}
+              priority = "P1" if (route in urgent_routes and score >= 0.15) else "P2"
+              action = "HUMAN_REVIEW" if priority == "P1" else "AUTO_REPLY"
+              out = dict(event)
+              out.update({
+                  "priority": priority,
+                  "action": action,
+                  "result_ts": int(time.time())
+              })
+              dur = int((time.time()-start)*1000)
+              print(json.dumps({"step":"postprocess","ticket_id":ticket_id,"duration_ms":dur,"priority":priority,"action":action}))
+              return out
+
+  # ------------------------------------------------------------
+  # Step Functions
+  # ------------------------------------------------------------
+  TicketTriageStateMachine:
+    Type: AWS::StepFunctions::StateMachine
+    Properties:
+      RoleArn: !GetAtt StepFunctionsRole.Arn
+      DefinitionString:
+        Fn::Sub: |
+          {
+            "Comment": "AI6 Unit 5.W: Scale or Fail - batch Map over tickets (Preprocess -> Embed -> Postprocess)",
+            "StartAt": "EnsureDefaults",
+            "States": {
+              "EnsureDefaults": {
+                "Type": "Choice",
+                "Choices": [
+                  {
+                    "Variable": "$.max_concurrency",
+                    "IsPresent": true,
+                    "Next": "ProcessTickets"
+                  }
+                ],
+                "Default": "SetDefaults"
+              },
+              "SetDefaults": {
+                "Type": "Pass",
+                "Parameters": {
+                  "tickets.$": "$.tickets",
+                  "max_concurrency": 2
+                },
+                "Next": "ProcessTickets"
+              },
+              "ProcessTickets": {
+                "Type": "Map",
+                "ItemsPath": "$.tickets",
+                "MaxConcurrencyPath": "$.max_concurrency",
+                "ItemProcessor": {
+                  "ProcessorConfig": {
+                    "Mode": "INLINE"
+                  },
+                  "StartAt": "Preprocess",
+                  "States": {
+                    "Preprocess": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::lambda:invoke",
+                      "Parameters": {
+                        "FunctionName": "${PreprocessFunction.Arn}",
+                        "Payload.$": "$"
+                      },
+                      "OutputPath": "$.Payload",
+                      "Next": "Embed"
+                    },
+                    "Embed": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::aws-sdk:sagemakerruntime:invokeEndpoint",
+                      "Parameters": {
+                        "EndpointName": "${EmbedEndpoint.EndpointName}",
+                        "ContentType": "application/json",
+                        "Accept": "application/json",
+                        "Body.$": "States.JsonToString($)"
+                      },
+                      "ResultSelector": {
+                        "Payload.$": "States.StringToJson($.Body)"
+                      },
+                      "OutputPath": "$.Payload",
+                      "Next": "Postprocess"
+                    },
+                    "Postprocess": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::lambda:invoke",
+                      "Parameters": {
+                        "FunctionName": "${PostprocessFunction.Arn}",
+                        "Payload.$": "$"
+                      },
+                      "OutputPath": "$.Payload",
+                      "End": true
+                    }
+                  }
+                },
+                "ResultPath": "$.results",
+                "End": true
+              }
+            }
+          }
+  # ------------------------------------------------------------
+  # CloudWatch dashboard (basic + minimal)
+  # ------------------------------------------------------------
+  WorkshopDashboard:
+    Type: AWS::CloudWatch::Dashboard
+    Properties:
+      DashboardBody:
+        Fn::Sub: |
+          {
+            "widgets": [
+              {
+                "type": "text",
+                "x": 0,
+                "y": 0,
+                "width": 24,
+                "height": 2,
+                "properties": {
+                  "markdown": "# AI6 Unit 5.W — Scale or Fail\\n**Scaling is the job. Orchestration is the mechanism. RCA is the safety net.**\\n\\nWatch Embed concurrent executions + duration during the burst."
+                }
+              },
+              {
+                "type": "metric",
+                "x": 0,
+                "y": 2,
+                "width": 12,
+                "height": 6,
+                "properties": {
+                  "title": "Lambda Invocations (by step)",
+                  "view": "timeSeries",
+                  "stacked": false,
+                  "region": "${AWS::Region}",
+                  "metrics": [
+                    [ "AWS/Lambda", "Invocations", "FunctionName", "${PreprocessFunction}" ],
+                    [ ".", "Invocations", "FunctionName", "${PostprocessFunction}" ]
+                  ],
+                  "stat": "Sum",
+                  "period": 60
+                }
+              },
+               {
+                "type": "metric",
+                "x": 12,
+                "y": 2,
+                "width": 12,
+                "height": 6,
+                "properties": {
+                  "title": "Embed model (SageMaker): ModelLatency p95 + Invocations",
+                  "view": "timeSeries",
+                  "stacked": false,
+                  "region": "${AWS::Region}",
+                    "metrics": [
+                    [ "AWS/SageMaker", "ModelLatency", "EndpointName", "${EmbedEndpoint.EndpointName}", "VariantName", "AllTraffic", { "stat": "p95" } ],
+                    [ ".", "Invocations", ".", ".", ".", ".", { "stat": "Sum", "yAxis": "right" } ]
+                  ],
+                  "period": 60
+                }
+              },
+              {
+                "type": "metric",
+                "x": 0,
+                "y": 8,
+                "width": 12,
+                "height": 6,
+                "properties": {
+                  "title": "State Machine executions",
+                  "view": "timeSeries",
+                  "stacked": false,
+                  "region": "${AWS::Region}",
+                  "metrics": [
+                    [ "AWS/States", "ExecutionsStarted", "StateMachineArn", "${TicketTriageStateMachine}", { "stat": "Sum" } ],
+                    [ ".", "ExecutionsSucceeded", ".", ".", { "stat": "Sum" } ],
+                    [ ".", "ExecutionsFailed", ".", ".", { "stat": "Sum" } ]
+                  ],
+                  "period": 60
+                }
+              },
+              {
+                "type": "metric",
+                "x": 12,
+                "y": 8,
+                "width": 12,
+                "height": 6,
+                "properties": {
+                  "title": "Lambda Errors (by step)",
+                  "view": "timeSeries",
+                  "stacked": false,
+                  "region": "${AWS::Region}",
+                  "metrics": [
+                    [ "AWS/Lambda", "Errors", "FunctionName", "${PreprocessFunction}", { "stat": "Sum" } ],
+                    [ ".", "Errors", "FunctionName", "${PostprocessFunction}", { "stat": "Sum" } ]
+                  ],
+                  "period": 60
+                }
+              }
+            ]
+          }
+
+Outputs:
+  StateMachineArn:
+    Description: "Step Functions State Machine ARN"
+    Value: !Ref TicketTriageStateMachine
+  DashboardName:
+    Description: "CloudWatch Dashboard name"
+    Value: !Ref WorkshopDashboard
+  PreprocessFunctionName:
+    Value: !Ref PreprocessFunction
+  EmbedEndpointName:
+    Value: !GetAtt EmbedEndpoint.EndpointName
+  PostprocessFunctionName:
+    Value: !Ref PostprocessFunction

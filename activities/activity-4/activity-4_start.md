@@ -1,0 +1,141 @@
+# Activity 4: Scale Up & Compare
+
+**Primary KSB:** S19 — Ensure the model capacity is scaled in proportion to the operating requirements; S22 — Identify architecture to solve computational problems
+
+🎯 **Learning Objective:** Apply horizontal scaling by increasing parallel capacity and measure the improvement
+
+## AWS Docs (Core Services)
+
+See [AWS service docs and key quotes](../../docs/aws_service_docs.md).
+
+## 📋 Expected Outputs
+
+- A faster batch run at higher concurrency
+- Side-by-side comparison of MAX_CONCURRENCY=2 vs MAX_CONCURRENCY=10
+- One-sentence explanation of what changed and why
+- Thinking about the next bottleneck beyond concurrency
+
+---
+
+## 📝 Task 1 — Run the Same Burst at Higher Concurrency
+
+Run the burst-load script again with the same 40 tickets, but now allow **10 parallel executions**:
+
+⌨️ **Terminal:**
+
+```bash
+N=40 MAX_CONCURRENCY=10 ./scripts/03_burst_load.sh
+```
+
+Wait for completion and record the total batch duration.
+
+✅ **Checkpoint:** You can see a measurable change in total batch duration compared to Activity 3.
+
+---
+
+## 📝 Task 2 — Record the New Duration
+
+| Metric              | Your Value |
+|---------------------|------------|
+| Total batch duration |           |
+| Tickets processed    | 40        |
+| Max concurrency      | 10        |
+
+---
+
+## 📝 Task 3 — Compare Side-by-Side
+
+Fill in the comparison table using your results from Activity 3 and this activity:
+
+| Metric                | MAX_CONCURRENCY=2 | MAX_CONCURRENCY=10 |
+|-----------------------|--------------------|---------------------|
+| Total batch duration  |                    |                     |
+| Tickets processed     | 40                 | 40                  |
+| Throughput (tickets/s)|                    |                     |
+
+💡 **Tip:** Calculate throughput as `tickets / duration`. For example: 40 tickets / 17 s = ~2.4 tickets/s vs 40 tickets / 5 s = ~8 tickets/s.
+
+---
+
+## 📝 Task 4 — Observe the Dashboard Difference
+
+💻 **Console:**
+
+1. Open the **CloudWatch Dashboard**.
+2. Compare the metrics from the two burst runs:
+   - **ConcurrentExecutions** — does it now reach a higher value?
+   - **Embed Duration p95** — is the per-invocation time similar or different?
+   - **Execution count** — you should see a second cluster of executions.
+
+✅ **Checkpoint:** You can see how changing concurrency affects throughput and overall batch duration.
+
+---
+
+## 📝 Task 5 — Write Your Explanation
+
+In one sentence, explain what changed and why:
+
+> "We increased __________ from ___ to ___, which meant __________."
+
+💡 **Tip:** Focus on the difference between making each individual execution faster (vertical scaling) vs running more executions at the same time (horizontal scaling). Which one did we do?
+
+---
+
+## 📝 Task 6 — Think About the Next Bottleneck
+
+Consider this question (discuss with your coach or group):
+
+> "If we went to MAX_CONCURRENCY=40 (one slot per ticket), what would happen? What would be the next bottleneck?"
+
+Think about:
+- Lambda cold starts when 40 functions spin up simultaneously
+- AWS account-level Lambda concurrency limits
+- Memory and CPU contention
+- Cost implications
+
+<details>
+<summary><strong>Hint: what you should observe</strong></summary>
+
+- The batch should complete **significantly faster** than the `MAX_CONCURRENCY=2` run.
+- **ConcurrentExecutions** should rise toward your configured `MAX_CONCURRENCY`.
+- The per-item Embed duration usually stays in a similar range; the improvement comes from **more parallelism**, not faster single calls.
+
+</details>
+
+<details>
+<summary><strong>Example answer (optional)</strong></summary>
+
+> "We increased **MaxConcurrency** from 2 to 10, which meant more tickets were processed in parallel, reducing total batch duration even though each Embed call took roughly the same time."
+
+</details>
+
+---
+
+## 🚀 Extension
+
+Try additional concurrency values to find the sweet spot:
+
+⌨️ **Terminal:**
+
+```bash
+N=40 MAX_CONCURRENCY=5 ./scripts/03_burst_load.sh
+```
+
+```bash
+N=40 MAX_CONCURRENCY=20 ./scripts/03_burst_load.sh
+```
+
+Record the results:
+
+| MAX_CONCURRENCY | Duration | Throughput (tickets/s) |
+|-----------------|----------|------------------------|
+| 2               |          |                        |
+| 5               |          |                        |
+| 10              |          |                        |
+| 20              |          |                        |
+
+At what point do returns start to diminish?
+
+---
+
+🎓 **Complete** — proceed to [Activity 5](../activity-5/activity-5_start.md)
