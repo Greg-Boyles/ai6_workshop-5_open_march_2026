@@ -51,7 +51,7 @@ When the script finishes, it prints a summary. Record the total duration:
 
 💻 **Console:**
 
-1. Navigate to **CloudWatch** > **Dashboards** > open your dashboard.
+1. Navigate to **CloudWatch** > **Dashboards** > open your dashboard. (If you've left this open from a previous activity, you may need to click the refresh button in the top-right.)
 2. Look at the following widgets:
    - **Embed Duration p95** — how long is each Embed invocation taking?
    - **ConcurrentExecutions** — does it plateau at 2?
