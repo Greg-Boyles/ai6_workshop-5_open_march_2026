@@ -60,7 +60,7 @@ Time -->
 Worker 1: [T-0001][T-0003][T-0005][T-0007] ... [T-0039]
 Worker 2: [T-0002][T-0004][T-0006][T-0008] ... [T-0040]
 
-Total: 40 tickets / 2 workers = 20 batches x ~250ms = ~15-20 seconds
+Total: 40 tickets / 2 workers = 20 batches x ~250ms = ~5 seconds
 ```
 
 ### After: MaxConcurrency = 10
@@ -79,7 +79,7 @@ Worker 8:  [T-0008][T-0018][T-0028][T-0038]
 Worker 9:  [T-0009][T-0019][T-0029][T-0039]
 Worker 10: [T-0010][T-0020][T-0030][T-0040]
 
-Total: 40 tickets / 10 workers = 4 batches x ~250ms = ~4-7 seconds
+Total: 40 tickets / 10 workers = 4 batches x ~250ms = ~1 second
 ```
 
 ---
@@ -96,12 +96,12 @@ Total: 40 tickets / 10 workers = 4 batches x ~250ms = ~4-7 seconds
 | - Input/Output   |     |                  |     |   (queries)      |
 | - Error details  |     | Each emits:      |     | - Alarms         |
 +------------------+     | - Structured     |     +------------------+
-                          |   JSON logs      |
-                          | - Duration       |
-                          | - Invocations    |
-                          | - Errors         |
-                          | - Throttles      |
-                          +------------------+
+                         |   JSON logs      |
+                         | - Duration       |
+                         | - Invocations    |
+                         | - Errors         |
+                         | - Throttles      |
+                         +------------------+
 ```
 
 ---
