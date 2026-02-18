@@ -39,12 +39,12 @@ See [AWS service docs and key quotes](../../docs/aws_service_docs.md).
 💻 **Console:**
 
 1. Navigate to **Step Functions** > **State machines** > `AI6-Unit5W-ScaleOrFail-state-machine` (or use the `StateMachineArn` output from Activity 1).
-2. Click **Executions** and select the most recent execution.
+2. Click **Executions** and select the most recent execution. (If you've still got this page open from Activity 1, you may need to click the refresh button in the "Executions" table.)
 3. View the **Graph view** — you should see three steps:
    - **Preprocess**
    - **Embed**
    - **Postprocess**
-4. Note the **duration** of each step (visible in the execution details or step details).
+4. Note the **duration** of each step (visible in the execution details or step details when you click on the step).
 
 💡 **Tip:** Click on each step in the graph to see its input, output, and duration in the right-hand panel.
 
