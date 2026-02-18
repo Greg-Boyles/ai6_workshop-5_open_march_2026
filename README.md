@@ -14,21 +14,33 @@ By developing the confidence to navigate and interpret authoritative documentati
 
 A hands-on workshop where you deploy, stress-test, and troubleshoot a serverless ML pipeline on AWS. You will hit a real scaling wall, diagnose it with evidence, fix it, and prove the fix worked.
 
-**Duration:** 5 hours (with lunch)
-**Platform:** AWS (Lambda, Step Functions, CloudWatch, CloudFormation)
-**Sandbox:** Pluralsight / A Cloud Guru AWS Cloud Sandbox
+- **Duration:** 5 working hours (plus one hour for lunch)
+- **Platform:** AWS (Lambda, Step Functions, CloudWatch, CloudFormation)
+- **Sandbox:** Pluralsight AWS Cloud Sandbox
 
 ---
 
 ## Scaling Knob Used In This Workshop
 
-This workshop intentionally uses **Step Functions Map `max_concurrency`** as the primary scaling knob.
+In simple terms, a "scaling knob" is a single setting you can turn up or down to make part of the system do more (or less) work at the same time.
 
-AWS supports other concurrency controls too (for example **Lambda reserved concurrency**), but some sandbox environments may restrict certain controls.
+For this workshop we use the Step Functions `Map` state's `max_concurrency` as the main scaling knob. It's an orchestration-level control that determines how many items inside a Map state run in parallel.
 
-- Step Functions Map state / concurrency: `https://docs.aws.amazon.com/step-functions/latest/dg/state-map.html`
-- Lambda concurrency controls: `https://docs.aws.amazon.com/lambda/latest/dg/configuration-concurrency.html`
-- Pluralsight AWS sandbox limits: `https://help.pluralsight.com/hc/en-us/articles/24425443133076-AWS-cloud-sandbox`
+> **Step Functions** is a service that helps different parts of your workflow run in the right order, like a flowchart that coordinates each step.
+
+Why this knob?
+- It's easy to change and observe during hands-on exercises.
+- It works well inside sandbox environments where account-level limits (like Lambda reserved concurrency) may be restricted.
+- It demonstrates the common pattern: increase parallelism at the orchestrator, measure the result, then fix any new bottlenecks that appear.
+
+What `max_concurrency` does:
+- If `max_concurrency` is 5, at most five Map iterations run at the same time. New items wait until one finishes.
+- Increasing it lets more tasks run at once (faster throughput), but can reveal downstream bottlenecks (databases, external APIs) or increase cost.
+
+Useful links:
+- [Step Functions Map state / concurrency](https://docs.aws.amazon.com/step-functions/latest/dg/state-map.html)
+- [Lambda concurrency controls](https://docs.aws.amazon.com/lambda/latest/dg/configuration-concurrency.html)
+- [Pluralsight AWS sandbox limits](https://help.pluralsight.com/hc/en-us/articles/24425443133076-AWS-cloud-sandbox)
 
 ---
 
@@ -48,9 +60,11 @@ By the end of this workshop you will be able to:
 
 ## The Workshop Spine
 
-> **Scaling is the job.**
-> **Orchestration is the mechanism.**
-> **Root Cause Analysis is the safety net.**
+**Scaling is the job.**
+
+**Orchestration is the mechanism.**
+
+**Root Cause Analysis is the safety net.**
 
 ---
 
@@ -105,7 +119,9 @@ Read the [User Brief](user_brief.md) first to understand the scenario.
 
 ## Prerequisites
 
-- AWS Cloud Sandbox access (Pluralsight / A Cloud Guru)
+You will have met these prerequisites by engaging with previous workshops.
+
+- AWS Cloud Sandbox access (Pluralsight)
 - Familiarity with the AWS Console (basic navigation)
 - Comfort with running shell commands in a terminal
 
