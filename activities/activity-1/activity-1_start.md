@@ -65,6 +65,8 @@ aws cloudformation describe-stacks \
   --query "Stacks[0].Outputs"
 ```
 
+After running this, if you notice your terminal is unresponsive to your input, you may need to press Ctrl + C to regain control of the terminal.
+
 ---
 
 ## 🚀 Extension
