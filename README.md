@@ -4,6 +4,12 @@
 
 See [AWS service docs and key quotes](docs/aws_service_docs.md).
 
+As you grow into the role of an ML Engineer, becoming comfortable with seeking out and reading high‑quality documentation isn't just a useful habit, it's an essential professional skill.
+
+AWS's official documentation is actively maintained, continuously updated to reflect new features and service changes, and rigorously reviewed by AWS experts, making it the most reliable place to understand how cloud and AI tooling really works in practice. Relying on outdated or third‑party sources can lead to misunderstandings, because archived or unofficial materials often lag behind current service behaviour and may no longer be accurate as AWS evolves. 
+
+By developing the confidence to navigate and interpret authoritative documentation, you strengthen your ability to troubleshoot effectively, make informed design decisions, and stay aligned with industry best practices; key capabilities for any ML Engineer building robust, production‑ready solutions.
+
 ## Scale or Fail
 
 A hands-on workshop where you deploy, stress-test, and troubleshoot a serverless ML pipeline on AWS. You will hit a real scaling wall, diagnose it with evidence, fix it, and prove the fix worked.
