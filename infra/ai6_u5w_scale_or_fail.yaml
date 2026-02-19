@@ -73,7 +73,21 @@ Resources:
       Code:
         ZipFile: |
           import json, time, re
+          from decimal import Decimal, ROUND_HALF_UP
           MAX_CHARS = 5000
+          def _round_duration(value_ms: float) -> float:
+              """
+              - If value >= 1 ms: round to 2 decimal places (e.g. 250.5531 -> 250.55)
+              - If value < 1 ms: keep 2 significant digits overall (e.g. 0.024080 -> 0.024)
+              """
+              v = float(value_ms)
+              if abs(v) >= 1.0:
+                  # Use Decimal for banker-proof rounding (half up)
+                  return float(Decimal(v).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
+              else:
+                  # Two significant digits overall for sub-1 values
+                  # Use general format with 2 significant digits, then back to float
+                  return float(f"{v:.2g}")
           def handler(event, context):
               start = time.time()
               if not isinstance(event, dict):
@@ -92,7 +106,8 @@ Resources:
                   "token_count": len(tokens),
                   "received_ts": int(time.time())
               }
-              dur = int((time.time()-start)*1000)
+              dur_raw = (time.time() - start) * 1000
+              dur = _round_duration(dur_raw)
               print(json.dumps({"step":"preprocess","ticket_id":ticket_id,"duration_ms":dur,"token_count":out["token_count"]}))
               return out
 
@@ -112,7 +127,8 @@ Resources:
           SIMULATED_INFER_MS: !Ref SimulatedInferMs
       Code:
         ZipFile: |
-          import json, time, math, hashlib, os
+          import json, time, math, hashlib, os, random
+          from decimal import Decimal, ROUND_HALF_UP
           DIM = int(os.environ.get("EMBED_DIM","384"))
           SIM_MS = int(os.environ.get("SIMULATED_INFER_MS","250"))
           MODEL_NAME = os.environ.get("MODEL_NAME","sentence-transformers/all-MiniLM-L6-v2 (simulated)")
@@ -134,13 +150,38 @@ Resources:
           PROTO_EMB = {k: _embed(v) for k,v in PROTOTYPES.items()}
           def _cos(a,b):
               return sum(x*y for x,y in zip(a,b))
+          def _random_delay_ms(base_ms: int, spread_ms: int = 50, sigma: float = 25.0) -> float:
+              """
+              Draw a normally distributed delay around base_ms and clamp to [base_ms - spread_ms, base_ms + spread_ms].
+              Returns a float (ms).
+              """
+              sample = random.gauss(mu=base_ms, sigma=sigma)
+              lower, upper = base_ms - spread_ms, base_ms + spread_ms
+              return max(lower, min(upper, sample))
+          def _round_duration(value_ms: float) -> float:
+              """
+              - If value >= 1 ms: round to 2 decimal places (e.g. 250.5531 -> 250.55)
+              - If value < 1 ms: keep 2 significant digits overall (e.g. 0.024080 -> 0.024)
+              """
+              v = float(value_ms)
+              if abs(v) >= 1.0:
+                  # Use Decimal for banker-proof rounding (half up)
+                  return float(Decimal(v).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
+              else:
+                  # Two significant digits overall for sub-1 values
+                  # Use general format with 2 significant digits, then back to float
+                  return float(f"{v:.2g}")
           def handler(event, context):
               start = time.time()
               if not isinstance(event, dict):
                   raise ValueError("Input must be a JSON object")
               ticket_id = event.get("ticket_id","T-UNKNOWN")
               text = event.get("text","")
-              time.sleep(SIM_MS/1000.0)
+
+              # Randomised simulated inference latency
+              sim_delay_ms = _random_delay_ms(SIM_MS, spread_ms=50, sigma=25.0)
+              time.sleep(sim_delay_ms / 1000.0)
+
               vec = _embed(text)
               scores = {k: _cos(vec,e) for k,e in PROTO_EMB.items()}
               best = max(scores, key=scores.get)
@@ -159,7 +200,8 @@ Resources:
                   "route": best,
                   "route_score": round(best_score, 3)
               })
-              dur = int((time.time()-start)*1000)
+              dur_raw = (time.time() - start) * 1000
+              dur = _round_duration(dur_raw)
               print(json.dumps({"step":"embed","ticket_id":ticket_id,"duration_ms":dur,"route":best,"route_score":out["route_score"],"emb_hash":emb_hash}))
               return out
   PostprocessFunction:
@@ -174,6 +216,20 @@ Resources:
       Code:
         ZipFile: |
           import json, time
+          from decimal import Decimal, ROUND_HALF_UP
+          def _round_duration(value_ms: float) -> float:
+              """
+              - If value >= 1 ms: round to 2 decimal places (e.g. 250.5531 -> 250.55)
+              - If value < 1 ms: keep 2 significant digits overall (e.g. 0.024080 -> 0.024)
+              """
+              v = float(value_ms)
+              if abs(v) >= 1.0:
+                  # Use Decimal for banker-proof rounding (half up)
+                  return float(Decimal(v).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
+              else:
+                  # Two significant digits overall for sub-1 values
+                  # Use general format with 2 significant digits, then back to float
+                  return float(f"{v:.2g}")
           def handler(event, context):
               start = time.time()
               if not isinstance(event, dict):
@@ -191,7 +247,8 @@ Resources:
                   "action": action,
                   "result_ts": int(time.time())
               })
-              dur = int((time.time()-start)*1000)
+              dur_raw = (time.time() - start) * 1000
+              dur = _round_duration(dur_raw)
               print(json.dumps({"step":"postprocess","ticket_id":ticket_id,"duration_ms":dur,"priority":priority,"action":action}))
               return out
 

@@ -29,13 +29,13 @@ See [AWS service docs and key quotes](../../docs/aws_service_docs.md).
 
 ## 📝 Task 2 — Examine the State Machine Definition
 
-1. View the state machine definition in the **visual editor**.
+1. View the state machine definition by selecting an execution and inspecting the Graph view.
 2. Identify the **Map state** — this is the parallel processing construct.
-3. Find the **MaxConcurrency** parameter on the Map state.
+3. Find the `max_concurrency` parameter on the Map state. Do this by selecting the Map state (ProcessTickets) in the graph view, then clicking "View Map state overview".
 
-✅ **Checkpoint:** You can see the Map state and its MaxConcurrency value in the definition.
+✅ **Checkpoint:** You can see the Map state and its `max_concurrency` value in the definition.
 
-💡 **Tip:** The Map state iterates over an array of inputs and runs a sub-workflow for each item. MaxConcurrency controls how many run in parallel.
+💡 **Tip:** The Map state iterates over an array of inputs and runs a sub-workflow for each item. `max_concurrency` controls how many run in parallel.
 
 ---
 
@@ -59,7 +59,7 @@ See [AWS service docs and key quotes](../../docs/aws_service_docs.md).
 
 💻 **Console:** CloudWatch > Logs > Logs Insights
 
-2. Select the following log groups (tick all three):
+2. Click in the box that says "Select up to 50 log groups" and select the following log groups (tick all three):
    - `/aws/lambda/AI6-Unit5W-ScaleOrFail-preprocess`
    - `/aws/lambda/AI6-Unit5W-ScaleOrFail-embed`
    - `/aws/lambda/AI6-Unit5W-ScaleOrFail-postprocess`
@@ -70,18 +70,13 @@ See [AWS service docs and key quotes](../../docs/aws_service_docs.md).
 
 ## 📝 Task 5 — Query 1: Recent Log Lines
 
-Paste the following query and click **Run query**:
+You can filter logs by time by using the time filter at the top of the screen. By default it's set to 1h, which will be fine for our purposes, but you may wish to constrain it to get a finer view of the situation.
 
-```sql
-fields @timestamp, @message
-| filter @timestamp > ago(15m)
-| sort @timestamp desc
-| limit 50
-```
+The default query works fine, so click **Run query**. (You may wish to limit the number of log messages, but it's not necessary.)
 
-This shows the most recent 50 log lines across all three Lambda functions.
+Once you've run the query, the raw logs appear at the bottom of the screen. You can view patterns (shared text structures that recur in your logs) by click the "Patterns" tab under the query box.
 
-✅ **Checkpoint:** You see log entries from preprocess, embed, and postprocess functions.
+✅ **Checkpoint:** You see log entries from preprocess, embed, and postprocess functions. If you're missing any of these, you might need to extend the time filter (longer time) or increase the query limit.
 
 ---
 
