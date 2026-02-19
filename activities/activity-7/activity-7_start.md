@@ -20,12 +20,12 @@ See [AWS service docs and key quotes](../../docs/aws_service_docs.md).
 
 ## 📝 Task 1 — Recall or Re-run the Burst Test
 
-Recall the burst test from Activity 3, where you ran 40 tickets with low concurrency. If you need to re-run it:
+Recall the burst test from Activity 3, where you ran 500 tickets with low concurrency. If you need to re-run it:
 
 ⌨️ **Terminal:**
 
 ```bash
-N=40 MAX_CONCURRENCY=2 ./scripts/03_burst_load.sh
+N=500 MAX_CONCURRENCY=2 ./scripts/03_burst_load.sh
 ```
 
 Record the batch duration: ___ seconds.
@@ -61,7 +61,7 @@ Use the Scaling RCA Tree to classify this incident:
 
 Which leaf matches? Write your classification: _______________________________________________
 
-💡 **Tip:** The key evidence is that ConcurrentExecutions is capped at 2 while 40 items are waiting. The per-request duration is normal — the bottleneck is throughput, not per-request performance.
+💡 **Tip:** The key evidence is that ConcurrentExecutions is capped at 2 while 500 items are waiting. The per-request duration is normal — the bottleneck is throughput, not per-request performance.
 
 ---
 
@@ -101,7 +101,7 @@ Re-run the burst test with higher concurrency:
 ⌨️ **Terminal:**
 
 ```bash
-N=40 MAX_CONCURRENCY=10 ./scripts/03_burst_load.sh
+N=500 MAX_CONCURRENCY=10 ./scripts/03_burst_load.sh
 ```
 
 Record the batch duration: ___ seconds.
@@ -116,7 +116,7 @@ Fill in the comparison table:
 |---|---|---|
 | Batch duration | ___ seconds | ___ seconds |
 | ConcurrentExecutions | ___ | ___ |
-| Items processed | 40 | 40 |
+| Items processed | 500 | 500 |
 | Per-item p95 duration | ___ ms | ___ ms |
 
 ✅ **Checkpoint:** You can compare before/after results using metrics and duration evidence.
@@ -159,10 +159,10 @@ Complete the following incident report:
 
 ---
 
-🚀 **Extension:** If you increased MAX_CONCURRENCY to 40, what would be the next bottleneck? Think about:
+🚀 **Extension:** If you increased MAX_CONCURRENCY to 500, what would be the next bottleneck? Think about:
 - Lambda account-level concurrency limits (default: 1000 across all functions)
 - Cold starts when many new execution environments spin up at once
-- Whether the embed model API could handle 40 simultaneous requests
+- Whether the embed model API could handle 500 simultaneous requests
 
 ---
 

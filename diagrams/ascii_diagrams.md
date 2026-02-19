@@ -3,7 +3,7 @@
 ## 1. Pipeline Overview
 
 ```
-                 (Burst load: 40 tickets)
+                 (Burst load: 500 tickets)
                           |
                           v
            +-----------------------------+
@@ -57,10 +57,10 @@
 ```
 Time -->
 
-Worker 1: [T-0001][T-0003][T-0005][T-0007] ... [T-0039]
-Worker 2: [T-0002][T-0004][T-0006][T-0008] ... [T-0040]
+Worker 1: [T-0001][T-0003][T-0005][T-0007] ... [T-0249]
+Worker 2: [T-0002][T-0004][T-0006][T-0008] ... [T-0500]
 
-Total: 40 tickets / 2 workers = 20 batches x ~250ms = ~5 seconds
+Total: 500 tickets / 2 workers = 250 batches x ~500ms = ~125 seconds
 ```
 
 ### After: MaxConcurrency = 10
@@ -68,18 +68,18 @@ Total: 40 tickets / 2 workers = 20 batches x ~250ms = ~5 seconds
 ```
 Time -->
 
-Worker 1:  [T-0001][T-0011][T-0021][T-0031]
-Worker 2:  [T-0002][T-0012][T-0022][T-0032]
-Worker 3:  [T-0003][T-0013][T-0023][T-0033]
-Worker 4:  [T-0004][T-0014][T-0024][T-0034]
-Worker 5:  [T-0005][T-0015][T-0025][T-0035]
-Worker 6:  [T-0006][T-0016][T-0026][T-0036]
-Worker 7:  [T-0007][T-0017][T-0027][T-0037]
-Worker 8:  [T-0008][T-0018][T-0028][T-0038]
-Worker 9:  [T-0009][T-0019][T-0029][T-0039]
-Worker 10: [T-0010][T-0020][T-0030][T-0040]
+Worker 1:  [T-0001][T-0011][T-0021] ... [T-0241]
+Worker 2:  [T-0002][T-0012][T-0022] ... [T-0242]
+Worker 3:  [T-0003][T-0013][T-0023] ... [T-0243]
+Worker 4:  [T-0004][T-0014][T-0024] ... [T-0244]
+Worker 5:  [T-0005][T-0015][T-0025] ... [T-0245]
+Worker 6:  [T-0006][T-0016][T-0026] ... [T-0246]
+Worker 7:  [T-0007][T-0017][T-0027] ... [T-0247]
+Worker 8:  [T-0008][T-0018][T-0028] ... [T-0248]
+Worker 9:  [T-0009][T-0019][T-0029] ... [T-0249]
+Worker 10: [T-0010][T-0020][T-0030] ... [T-0250]
 
-Total: 40 tickets / 10 workers = 4 batches x ~250ms = ~1 second
+Total: 500 tickets / 10 workers = 50 batches x ~500ms = ~25 seconds
 ```
 
 ---

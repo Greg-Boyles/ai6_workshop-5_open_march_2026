@@ -4,15 +4,15 @@
 
 ```
 Batch complete.
-  Tickets processed : 40
+  Tickets processed : 500
   Max concurrency   : 2
-  Total duration    : 17.3s
+  Total duration    : 126s
   Status            : ALL SUCCEEDED
 ```
 
-Typical duration range: **15–20 seconds**.
+Typical duration range: **120–180 seconds**.
 
-Why so slow? With only 2 parallel slots, the pipeline processes tickets roughly 2 at a time. Each ticket takes ~400 ms end-to-end, so 40 tickets / 2 concurrency = ~20 sequential batches of ~400 ms each.
+Why so slow? With only 2 parallel slots, the pipeline processes tickets roughly 2 at a time. Each ticket takes ~500 ms end-to-end, so 500 tickets / 2 concurrency = ~250 sequential batches of ~500 ms each.
 
 ---
 
@@ -23,8 +23,8 @@ Why so slow? With only 2 parallel slots, the pipeline processes tickets roughly 
 - This is the concurrency ceiling imposed by `MAX_CONCURRENCY=2`.
 
 ### Embed Duration p95
-- The Embed step consistently shows **~200–400 ms** per invocation.
-- Preprocess and Postprocess remain at **~5–15 ms**.
+- The Embed step consistently shows **~200–300 ms** per invocation.
+- Preprocess and Postprocess remain at **<1 ms**.
 - The Embed step dominates the total execution time.
 
 ---
@@ -71,22 +71,22 @@ Why so slow? With only 2 parallel slots, the pipeline processes tickets roughly 
 
 ### Step 3 — Which step to scale first?
 
-> "I would scale **Embed** first because **it has the highest p95 duration (~250 ms vs ~10 ms for other steps) and is the compute-intensive ML inference step. The ConcurrentExecutions metric confirms it is the constraint — only 2 can run at a time, creating a queue**."
+> "I would scale **Embed** first because **it has the highest p95 duration (~250 ms vs ~1 ms for other steps) and is the compute-intensive ML inference step. The ConcurrentExecutions metric confirms it is the constraint — only 2 can run at a time, creating a queue**."
 
 ---
 
 ## Bottleneck Answer
 
-> "The bottleneck is the **Embed** step. Evidence: (1) ConcurrentExecutions plateaus at exactly 2, meaning tickets are queuing rather than running in parallel. (2) Embed Duration p95 is ~250 ms, which is 20x longer than Preprocess or Postprocess. (3) The total batch time (~17 s) closely matches the theoretical minimum of 40 tickets / 2 concurrency * ~400 ms per execution."
+> "The bottleneck is the **Embed** step. Evidence: (1) ConcurrentExecutions plateaus at exactly 2, meaning tickets are queuing rather than running in parallel. (2) Embed Duration p95 is ~250 ms, which is hundreds of times longer than Preprocess or Postprocess. (3) The total batch time (~126s s) closely matches the theoretical minimum of 500 tickets / 2 concurrency * ~500 ms per execution."
 
 ---
 
-## Extension — N=60 Results
+## Extension — N=750 Results
 
 | Scenario                     | Typical Duration |
 |------------------------------|------------------|
-| N=40, MAX_CONCURRENCY=2     | ~15–20 s         |
-| N=60, MAX_CONCURRENCY=2     | ~23–30 s         |
+| N=500, MAX_CONCURRENCY=2     | ~120-180 s         |
+| N=750, MAX_CONCURRENCY=2     | ~180-270 s         |
 
 The wall gets proportionally worse: more tickets with the same concurrency ceiling means a longer queue.
 
@@ -94,8 +94,8 @@ The wall gets proportionally worse: more tickets with the same concurrency ceili
 
 ## ✅ Self-Check
 
-- [ ] Batch of 40 tickets completed with `ALL SUCCEEDED`
-- [ ] Batch duration was approximately 15–20 seconds
+- [ ] Batch of 500 tickets completed with `ALL SUCCEEDED`
+- [ ] Batch duration was approximately 120-180 seconds
 - [ ] CloudWatch Dashboard shows ConcurrentExecutions plateauing at 2
 - [ ] Embed Duration p95 is clearly the dominant step (~200–400 ms)
 - [ ] Scaling Map is fully completed with answers for all three steps

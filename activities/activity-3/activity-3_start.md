@@ -17,19 +17,19 @@ See [AWS service docs and key quotes](../../docs/aws_service_docs.md).
 
 ---
 
-## 📝 Task 1 — Send a Burst of 40 Tickets at Low Concurrency
+## 📝 Task 1 — Send a Burst of 500 Tickets at Low Concurrency
 
 📘 **Note:** In this workshop, the scaling knob you are tuning is Step Functions Map `max_concurrency` (passed as `MAX_CONCURRENCY` in the script), rather than Lambda reserved concurrency.
 
-Run the burst-load script with 40 tickets and a maximum concurrency of 2:
+Run the burst-load script with 500 tickets and a maximum concurrency of 2:
 
 ⌨️ **Terminal:**
 
 ```bash
-N=40 MAX_CONCURRENCY=2 ./scripts/03_burst_load.sh
+N=500 MAX_CONCURRENCY=2 ./scripts/03_burst_load.sh
 ```
 
-This sends 40 tickets through the pipeline, but only allows **2 executions to run in parallel** at any time.
+This sends 500 tickets through the pipeline, but only allows **2 executions to run in parallel** at any time.
 
 ✅ **Checkpoint:** The script completes and prints the total batch duration.
 
@@ -42,7 +42,7 @@ When the script finishes, it prints a summary. Record the total duration:
 | Metric              | Your Value |
 |---------------------|------------|
 | Total batch duration |           |
-| Tickets processed    | 40        |
+| Tickets processed    | 500        |
 | Max concurrency      | 2         |
 
 ---
@@ -58,6 +58,8 @@ When the script finishes, it prints a summary. Record the total duration:
 3. Notice the pattern: tickets are queuing up because only 2 can run at once.
 
 💡 **Tip:** The dashboard may take **1–2 minutes** to update after the burst completes. Refresh the page if metrics appear stale.
+
+📘 **Step duration vs Duration p95:** In the previous activity, you read the duration of individual iterations of steps in the state machine graph. These durations will differ from the logged p95 durations in the dashboard. The origins of these two values are different; the latter comes directly from calculations in the lamda, while the former is AWS-determined. It's *not* the case that one is correct and the other is wrong, and it's also *not* the case that one is more useful than the other; they serve slightly different purposes.
 
 ✅ **Checkpoint:** The dashboard shows concurrency and duration signals you can use as evidence.
 
@@ -148,15 +150,15 @@ Try increasing the ticket count while keeping concurrency low:
 ⌨️ **Terminal:**
 
 ```bash
-N=60 MAX_CONCURRENCY=2 ./scripts/03_burst_load.sh
+N=750 MAX_CONCURRENCY=2 ./scripts/03_burst_load.sh
 ```
 
 Does the wall get worse? Record the new duration and compare.
 
 | Scenario                     | Duration |
 |------------------------------|----------|
-| N=40, MAX_CONCURRENCY=2     |          |
-| N=60, MAX_CONCURRENCY=2     |          |
+| N=500, MAX_CONCURRENCY=2     |          |
+| N=750, MAX_CONCURRENCY=2     |          |
 
 ---
 

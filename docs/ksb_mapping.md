@@ -32,7 +32,7 @@ Workshop spine:
 - Evidence:
   - Screenshot: CloudWatch dashboard showing batch duration before/after
   - Screenshot: ConcurrentExecutions widget before/after
-  - One sentence: "We scaled the bottleneck step (Embed) by increasing Map MaxConcurrency from 2 to 10, which reduced batch duration from ~15-20s to ~4-7s."
+  - One sentence: "We scaled the bottleneck step (Embed) by increasing Map `max_concurrency` from 2 to 10, which reduced batch duration from ~x s to ~y s."
 
 **S22 — Identify the ML/AI platform architecture and specific hardware, to contribute to solving a computational problem using allocated resources.**
 - **Activity 4:** Learners justify *what* is being scaled (the model step vs pre/post) and *why*, using the orchestration map plus metrics.

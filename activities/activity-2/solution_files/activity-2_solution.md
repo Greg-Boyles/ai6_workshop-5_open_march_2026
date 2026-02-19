@@ -25,7 +25,7 @@ The exact values for `route`, `route_score`, `priority`, and `action` depend on 
 | Step        | Typical Duration | What It Does                                      |
 |-------------|------------------|---------------------------------------------------|
 | Preprocess  | ~100-200 ms         | Validates and cleans the input ticket text         |
-| **Embed**   | **~400-500 ms**  | Runs the ML model (sentence embedding + routing)   |
+| **Embed**   | **~300-500 ms**  | Runs the ML model (sentence embedding + routing)   |
 | Postprocess | ~100-200 ms         | Applies business rules (priority, action)          |
 
 These are *typical* durations, and you may see values outside of those given above. There are lots of factors that could affect durations. Try running a few executions by re-running the `./scripts/02_invoke_one.sh` command and see if they generally fall within a small range of values.
