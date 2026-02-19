@@ -71,7 +71,7 @@ After running this, if you notice your terminal is unresponsive to your input, y
 
 ## 🚀 Extension
 
-Open the **CloudFormation** console, find the `AI6-Unit5W-ScaleOrFail` stack, and browse the **Resources** tab. See how many resources were created and what types they are (Lambda functions, IAM roles, Step Functions state machine, CloudWatch dashboard, etc.).
+Open the **CloudFormation** console, find the `AI6-Unit5W-ScaleOrFail` stack, and browse the **Resources** tab. See how many resources were created and what types they are ([Lambda functions](../../diagrams/aws_lambda.jpg), IAM roles, Step Functions state machine, CloudWatch dashboard, etc.).
 
 ---
 
