@@ -91,7 +91,7 @@ By the end of this workshop you will be able to:
 
 Read the [User Brief](user_brief.md) first to understand the scenario.
 
-### Morning — Scaling is the Job
+### Scaling is the Job
 
 | Activity | Title | Focus |
 |----------|-------|-------|
@@ -100,7 +100,7 @@ Read the [User Brief](user_brief.md) first to understand the scenario.
 | [Activity 3](activities/activity-3/activity-3_start.md) | Hit the Wall | Burst load at low concurrency, find the bottleneck |
 | [Activity 4](activities/activity-4/activity-4_start.md) | Scale Up & Compare | Increase parallelism, measure the improvement |
 
-### Afternoon — RCA is the Safety Net
+### RCA is the Safety Net
 
 | Activity | Title | Focus |
 |----------|-------|-------|

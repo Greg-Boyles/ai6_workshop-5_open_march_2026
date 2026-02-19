@@ -8,7 +8,7 @@ See [AWS service docs and key quotes](aws_service_docs.md).
 
 This workshop uses the **AWS Cloud Sandbox** provided via Pluralsight.
 
-⚠️ **Warning:** Do not start the sandbox until your coach tells you to (~10:45). The sandbox has a ~4 hour time limit.
+⚠️ **Warning:** The sandbox has a ~4 hour time limit. It's recommended you don't start until the Coach tells you to, or to be aware that you will need to extend the time from Pluralsight.
 
 ---
 
