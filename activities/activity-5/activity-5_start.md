@@ -89,6 +89,8 @@ Write a Logs Insights query that extracts:
 
 Then display those fields in a table.
 
+💡 **Read the docs!** You will need to consult authoritative, trustworthy sources online to complete this task, like those listed [here](../../docs/aws_service_docs.md). Some limited hints are given [here](../../observability/cloudwatch_logs_insights_queries.md), but you will need to look elsewhere, too.
+
 ✅ **Checkpoint:** You can see columns for step, ticket_id, and duration_ms in the results.
 
 ---

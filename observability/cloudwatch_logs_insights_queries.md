@@ -2,7 +2,7 @@
 
 ## AWS Docs
 
-- **CloudWatch Logs Insights**: `https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/AnalyzingLogData.html`
+- **CloudWatch Logs Insights**: https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/AnalyzingLogData.html
 > "With CloudWatch Logs Insights, you can interactively search and analyze your log data in Amazon CloudWatch Logs."
 
 Open **CloudWatch → Logs Insights**.
@@ -16,10 +16,9 @@ Select log groups:
 
 ---
 
-## 1) Recent log lines (last 15 minutes)
+## 1) Recent log lines
 ```sql
 fields @timestamp, @message
-| filter @timestamp > ago(15m)
 | sort @timestamp desc
 | limit 50
 ```
@@ -27,19 +26,16 @@ fields @timestamp, @message
 ## 2) Extract the structured JSON fields we log
 ```sql
 fields @timestamp, @message
-| filter @timestamp > ago(15m)
 | parse @message /"step"\s*:\s*"(?<step>[^"]+)"/
 | parse @message /"duration_ms"\s*:\s*(?<duration_ms>\d+)/
 | parse @message /"ticket_id"\s*:\s*"(?<ticket_id>[^"]+)"/
 | display @timestamp, step, ticket_id, duration_ms, @message
 | sort @timestamp desc
-| limit 100
 ```
 
-## 3) Average + max duration by step (last 15 minutes)
+## 3) Average + max duration by step
 ```sql
 fields @timestamp, @message
-| filter @timestamp > ago(15m)
 | parse @message /"step"\s*:\s*"(?<step>[^"]+)"/
 | parse @message /"duration_ms"\s*:\s*(?<duration_ms>\d+)/
 | stats avg(duration_ms) as avg_ms, max(duration_ms) as max_ms, count(*) as n by step
@@ -49,7 +45,6 @@ fields @timestamp, @message
 ## 4) Spot “bad input” events (PayloadTooLarge)
 ```sql
 fields @timestamp, @message
-| filter @timestamp > ago(60m)
 | filter @message like /PayloadTooLarge/
 | sort @timestamp desc
 | limit 50
