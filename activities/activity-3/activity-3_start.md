@@ -143,23 +143,4 @@ Write 2–3 sentences referencing specific metrics from the dashboard.
 
 ---
 
-## 🚀 Extension
-
-Try increasing the ticket count while keeping concurrency low:
-
-⌨️ **Terminal:**
-
-```bash
-N=750 MAX_CONCURRENCY=2 ./scripts/03_burst_load.sh
-```
-
-Does the wall get worse? Record the new duration and compare.
-
-| Scenario                     | Duration |
-|------------------------------|----------|
-| N=500, MAX_CONCURRENCY=2     |          |
-| N=750, MAX_CONCURRENCY=2     |          |
-
----
-
 🎓 **Complete** — proceed to [Activity 4](../activity-4/activity-4_start.md)

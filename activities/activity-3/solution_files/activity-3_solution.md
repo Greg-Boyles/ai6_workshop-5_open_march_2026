@@ -81,17 +81,6 @@ Why so slow? With only 2 parallel slots, the pipeline processes tickets roughly 
 
 ---
 
-## Extension — N=750 Results
-
-| Scenario                     | Typical Duration |
-|------------------------------|------------------|
-| N=500, MAX_CONCURRENCY=2     | ~120-180 s         |
-| N=750, MAX_CONCURRENCY=2     | ~180-270 s         |
-
-The wall gets proportionally worse: more tickets with the same concurrency ceiling means a longer queue.
-
----
-
 ## ✅ Self-Check
 
 - [ ] Batch of 500 tickets completed with `ALL SUCCEEDED`
