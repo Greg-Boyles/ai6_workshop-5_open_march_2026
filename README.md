@@ -89,7 +89,7 @@ By the end of this workshop you will be able to:
 
 ## Workshop Structure
 
-Read the [User Brief](user_brief.md) first to understand the scenario.
+Read the [User Brief](user_brief.md) first to understand the scenario. You may also wish to look ahead to [Activity 8](activities/activity-8/activity-8_start.md), Task 1 because it requires you to gather screenshots from previous activities. There's no harm in repeating previous activities (and, in fact, some benefit), but you may wish to proceed with your eyes open!
 
 ### Scaling is the Job
 
