@@ -19,7 +19,7 @@ The exact account ID and region will vary based on your lab environment.
 When you first open the CloudWatch Dashboard, you will see several widgets:
 
 - **Lambda Invocations (by step)** — no data points yet
-- **Embed step: Duration p95 & ConcurrentExecutions (max)** — no data points yet
+- **All steps: Duration p95 & ConcurrentExecutions (max)** — no data points yet
 - **State Machine executions** — no data points yet
 - **Lambda Errors (by step)** — no data points yet
 

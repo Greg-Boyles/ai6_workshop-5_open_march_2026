@@ -380,12 +380,14 @@ Resources:
                 "width": 12,
                 "height": 6,
                 "properties": {
-                  "title": "Embed step: Duration p95 + ConcurrentExecutions (max)",
+                  "title": "All steps: Duration p95 + ConcurrentExecutions (max)",
                   "view": "timeSeries",
                   "stacked": false,
                   "region": "${AWS::Region}",
                   "metrics": [
+                    [ "AWS/Lambda", "Duration", "FunctionName", "${PreprocessFunction}", { "stat": "p95" } ],
                     [ "AWS/Lambda", "Duration", "FunctionName", "${EmbedFunction}", { "stat": "p95" } ],
+                    [ "AWS/Lambda", "Duration", "FunctionName", "${PostprocessFunction}", { "stat": "p95" } ],
                     [ ".", "ConcurrentExecutions", "FunctionName", "${EmbedFunction}", { "stat": "Maximum", "yAxis": "right" } ]
                   ],
                   "period": 60
