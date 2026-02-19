@@ -46,7 +46,7 @@ Run the script that sends an oversized payload to the pipeline:
 ## 📝 Task 3 — Read the Error Message
 
 1. In the execution detail view, click on the failed state (it will be highlighted in red).
-2. Read the **Error** and **Cause** fields.
+2. Read the **Reason** for failure in the Input/Output tab.
 
 What does the error message say? Write it down.
 
@@ -67,6 +67,8 @@ When your pipeline is slow or failing under load, classify it:
 **3) TIMED OUT (dependency)** — Duration grows, retries. Cause: external API slow.
 
 **4) BAD INPUT (data)** — Immediate failures, validation errors. Cause: no validation gate.
+
+You can also view an image of this tree [here](../../diagrams/RCA_tree_example.jpg).
 
 ---
 
@@ -92,10 +94,8 @@ Run **Query 4** to find the error:
 
 ```sql
 fields @timestamp, @message
-| filter @timestamp > ago(60m)
 | filter @message like /PayloadTooLarge/
 | sort @timestamp desc
-| limit 50
 ```
 
 ✅ **Checkpoint:** The query returns log entries containing the PayloadTooLarge error.
