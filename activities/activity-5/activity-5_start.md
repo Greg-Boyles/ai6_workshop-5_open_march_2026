@@ -116,37 +116,6 @@ Think about:
 - How Logs Insights lets you aggregate and compare step durations
 
 <details>
-<summary><strong>Hint: what you should observe</strong></summary>
-
-If you want a working solution for Query 2:
-
-```sql
-fields @timestamp, @message
-| filter @timestamp > ago(15m)
-| parse @message /"step"\s*:\s*"(?<step>[^"]+)"/
-| parse @message /"duration_ms"\s*:\s*(?<duration_ms>\d+)/
-| parse @message /"ticket_id"\s*:\s*"(?<ticket_id>[^"]+)"/
-| display @timestamp, step, ticket_id, duration_ms, @message
-| sort @timestamp desc
-| limit 100
-```
-
-And for Query 3:
-
-```sql
-fields @timestamp, @message
-| filter @timestamp > ago(15m)
-| parse @message /"step"\s*:\s*"(?<step>[^"]+)"/
-| parse @message /"duration_ms"\s*:\s*(?<duration_ms>\d+)/
-| stats avg(duration_ms) as avg_ms, max(duration_ms) as max_ms, count(*) as n by step
-| sort avg_ms desc
-```
-
-You should see **Embed** at (or near) the top by `avg_ms`.
-
-</details>
-
-<details>
 <summary><strong>Example answer (optional)</strong></summary>
 
 > "Orchestration breaks the work into named steps and makes parallelism explicit (Map + MaxConcurrency). That lets you measure where time is spent per step (logs/metrics) and change throughput by tuning concurrency, without guessing."
