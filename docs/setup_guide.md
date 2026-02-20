@@ -6,18 +6,17 @@ See [AWS service docs and key quotes](aws_service_docs.md).
 
 ## Environment: AWS Cloud Sandbox
 
-This workshop uses the **AWS Cloud Sandbox** provided via Pluralsight / A Cloud Guru.
+This workshop uses the **AWS Cloud Sandbox** provided via Pluralsight.
 
-⚠️ **Warning:** Do not start the sandbox until your coach tells you to (~10:45). The sandbox has a ~4 hour time limit.
+⚠️ **Warning:** The sandbox has a ~4 hour time limit. It's recommended you don't start until the Coach tells you to, or to be aware that you will need to extend the time from Pluralsight.
 
 ---
 
 ## Step 1: Start Your Sandbox
 
-1. Go to your Pluralsight / A Cloud Guru sandbox
-2. Start an **AWS Cloud Sandbox**
-3. Wait for the sandbox to provision (this takes 1-2 minutes)
-4. Click **Open Console** to access the AWS Management Console
+1. Sign into Pluralsight
+1. Navigate to "Hands On" and start an **AWS Cloud Sandbox**
+3. Open your sandbox in a private browsing window and use the provided temporary credentials to login.
 
 ---
 
@@ -28,52 +27,39 @@ This workshop uses the **AWS Cloud Sandbox** provided via Pluralsight / A Cloud 
 
 ✅ **Checkpoint:** You should see a terminal prompt like:
 ```
-[cloudshell-user@ip-10-x-x-x ~]$
+~ $
 ```
 
 ---
 
 ## Step 3: Upload Workshop Files
 
-### Option A: Upload zip (recommended)
-
-1. Your coach will provide a zip file of the workshop repository
+1. Download a zip file of this repository from GitHub (from your GitHub repo: "Code" button > "Local" tab > "Download ZIP")
 2. In CloudShell, click **Actions** (top right) > **Upload file**
 3. Select the zip file and upload it
 4. Run:
 
 ```bash
-unzip ai6_unit5w_scale_or_fail*.zip
+unzip *.zip -d ai6_workshop-5
+mv ai6_workshop-5/*/* ai6_workshop-5/
+rmdir ai6_workshop-5/* 2>/dev/null
 cd ai6_workshop-5
 chmod +x scripts/*.sh
 ```
 
-### Option B: Clone from repository
 
-If you have access to the repository:
-
-```bash
-git clone <repository-url>
-cd ai6_workshop-5
-chmod +x scripts/*.sh
-```
-
-✅ **Checkpoint:** Run `ls` and you should see:
-```
-activities/  data/  diagrams/  docs/  infra/  README.md  scripts/  user_brief.md
-```
-
-### Option C: Ask your coach for help (backup)
-
-If you cannot upload files and cannot clone the repo, ask your coach for the backup setup method.
+✅ **Checkpoint:** Run `ls` and you should see contents that match the repo in GitHub.
 
 ---
 
 ## Step 4: Set Your Region
+Assuming you are still inside `ai6_workshop-5` (your terminal prompt should start with this folder name), then run:
 
 ```bash
 ./scripts/00_set_region.sh
 ```
+
+> The `.` at the start of this command (and others you'll see in this workshop) means *from the present working directory* and is a form of *relative file path*. That means that if you're *not* in the expected location (`ai6_workshop-5` in this case), then the above command won't work.
 
 Expected output:
 ```
@@ -108,7 +94,7 @@ This deploys a CloudFormation stack with:
 
 ## Step 6: Verify in the Console
 
-1. 💻 Open **Step Functions** in the AWS Console
+1. 💻 Using the AWS Console Search box at the top of the browser window, open **Step Functions** in the AWS Console
    - You should see a state machine called `AI6-Unit5W-ScaleOrFail-state-machine`
 2. 💻 Open **CloudWatch > Dashboards**
    - You should see a dashboard with widgets for Lambda metrics (typically `AI6-Unit5W-ScaleOrFail-dashboard`)

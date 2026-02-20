@@ -39,7 +39,7 @@ Across 8 activities, you will:
 
 1. **Deploy** the pipeline infrastructure using CloudFormation
 2. **Verify** it works with a single ticket (the happy path)
-3. **Stress-test** it with a burst of 40 tickets at low parallelism
+3. **Stress-test** it with a burst of 500 tickets at low parallelism
 4. **Scale** the bottleneck and measure the improvement
 5. **Investigate** the orchestration layer and logs
 6. **Diagnose** a data validation failure using structured RCA

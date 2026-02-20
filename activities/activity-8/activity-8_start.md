@@ -21,7 +21,7 @@ See [AWS service docs and key quotes](../../docs/aws_service_docs.md).
 
 ## 📝 Task 1 — Collect Your Evidence Screenshots
 
-Gather screenshots from across the workshop. Tick each item as you save it:
+Gather screenshots from across the workshop. You may want to repeat activities in order to get a good screenshot. (This will help embed your learning; you'll find it easier the second time!) Tick each item as you save it:
 
 - [ ] Step Functions execution graph — happy path (Activity 2)
 - [ ] CloudWatch dashboard showing the "wall" — low concurrency (Activity 3)

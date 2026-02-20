@@ -4,25 +4,43 @@
 
 See [AWS service docs and key quotes](docs/aws_service_docs.md).
 
+As you grow into the role of an ML Engineer, becoming comfortable with seeking out and reading high‑quality documentation isn't just a useful habit, it's an essential professional skill.
+
+AWS's official documentation is actively maintained, continuously updated to reflect new features and service changes, and rigorously reviewed by AWS experts, making it the most reliable place to understand how cloud and AI tooling really works in practice. Relying on outdated or third‑party sources can lead to misunderstandings, because archived or unofficial materials often lag behind current service behaviour and may no longer be accurate as AWS evolves. 
+
+By developing the confidence to navigate and interpret authoritative documentation, you strengthen your ability to troubleshoot effectively, make informed design decisions, and stay aligned with industry best practices; key capabilities for any ML Engineer building robust, production‑ready solutions.
+
 ## Scale or Fail
 
 A hands-on workshop where you deploy, stress-test, and troubleshoot a serverless ML pipeline on AWS. You will hit a real scaling wall, diagnose it with evidence, fix it, and prove the fix worked.
 
-**Duration:** 5 hours (with lunch)
-**Platform:** AWS (Lambda, Step Functions, CloudWatch, CloudFormation)
-**Sandbox:** Pluralsight / A Cloud Guru AWS Cloud Sandbox
+- **Duration:** 5 working hours (plus one hour for lunch)
+- **Platform:** AWS (Lambda, Step Functions, CloudWatch, CloudFormation)
+- **Sandbox:** Pluralsight AWS Cloud Sandbox
 
 ---
 
 ## Scaling Knob Used In This Workshop
 
-This workshop intentionally uses **Step Functions Map `max_concurrency`** as the primary scaling knob.
+In simple terms, a "scaling knob" is a single setting you can turn up or down to make part of the system do more (or less) work at the same time.
 
-AWS supports other concurrency controls too (for example **Lambda reserved concurrency**), but some sandbox environments may restrict certain controls.
+For this workshop we use the Step Functions `Map` state's `max_concurrency` as the main scaling knob. It's an orchestration-level control that determines how many items inside a Map state run in parallel.
 
-- Step Functions Map state / concurrency: `https://docs.aws.amazon.com/step-functions/latest/dg/state-map.html`
-- Lambda concurrency controls: `https://docs.aws.amazon.com/lambda/latest/dg/configuration-concurrency.html`
-- Pluralsight AWS sandbox limits: `https://help.pluralsight.com/hc/en-us/articles/24425443133076-AWS-cloud-sandbox`
+> **Step Functions** is a service that helps different parts of your workflow run in the right order, like a flowchart that coordinates each step.
+
+Why this knob?
+- It's easy to change and observe during hands-on exercises.
+- It works well inside sandbox environments where account-level limits (like Lambda reserved concurrency) may be restricted.
+- It demonstrates the common pattern: increase parallelism at the orchestrator, measure the result, then fix any new bottlenecks that appear.
+
+What `max_concurrency` does:
+- If `max_concurrency` is 5, at most five Map iterations run at the same time. New items wait until one finishes.
+- Increasing it lets more tasks run at once (faster throughput), but can reveal downstream bottlenecks (databases, external APIs) or increase cost.
+
+Useful links:
+- [Step Functions Map state / concurrency](https://docs.aws.amazon.com/step-functions/latest/dg/state-map.html)
+- [Lambda concurrency controls](https://docs.aws.amazon.com/lambda/latest/dg/configuration-concurrency.html)
+- [Pluralsight AWS sandbox limits](https://help.pluralsight.com/hc/en-us/articles/24425443133076-AWS-cloud-sandbox)
 
 ---
 
@@ -42,9 +60,11 @@ By the end of this workshop you will be able to:
 
 ## The Workshop Spine
 
-> **Scaling is the job.**
-> **Orchestration is the mechanism.**
-> **Root Cause Analysis is the safety net.**
+**Scaling is the job.**
+
+**Orchestration is the mechanism.**
+
+**Root Cause Analysis is the safety net.**
 
 ---
 
@@ -69,9 +89,9 @@ By the end of this workshop you will be able to:
 
 ## Workshop Structure
 
-Read the [User Brief](user_brief.md) first to understand the scenario.
+Read the [User Brief](user_brief.md) first to understand the scenario. You may also wish to look ahead to [Activity 8](activities/activity-8/activity-8_start.md), Task 1 because it requires you to gather screenshots from previous activities. There's no harm in repeating previous activities (and, in fact, some benefit), but you may wish to proceed with your eyes open!
 
-### Morning — Scaling is the Job
+### Scaling is the Job
 
 | Activity | Title | Focus |
 |----------|-------|-------|
@@ -80,7 +100,7 @@ Read the [User Brief](user_brief.md) first to understand the scenario.
 | [Activity 3](activities/activity-3/activity-3_start.md) | Hit the Wall | Burst load at low concurrency, find the bottleneck |
 | [Activity 4](activities/activity-4/activity-4_start.md) | Scale Up & Compare | Increase parallelism, measure the improvement |
 
-### Afternoon — RCA is the Safety Net
+### RCA is the Safety Net
 
 | Activity | Title | Focus |
 |----------|-------|-------|
@@ -99,7 +119,9 @@ Read the [User Brief](user_brief.md) first to understand the scenario.
 
 ## Prerequisites
 
-- AWS Cloud Sandbox access (Pluralsight / A Cloud Guru)
+You will have met these prerequisites by engaging with previous workshops.
+
+- AWS Cloud Sandbox access (Pluralsight)
 - Familiarity with the AWS Console (basic navigation)
 - Comfort with running shell commands in a terminal
 

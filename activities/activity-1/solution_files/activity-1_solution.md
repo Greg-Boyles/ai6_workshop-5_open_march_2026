@@ -18,10 +18,10 @@ The exact account ID and region will vary based on your lab environment.
 
 When you first open the CloudWatch Dashboard, you will see several widgets:
 
-- **Embed Duration (p50 / p95)** — no data points yet
-- **ConcurrentExecutions** — no data points yet
-- **Execution Status (Succeeded / Failed)** — no data points yet
-- **Throttles** — no data points yet
+- **Lambda Invocations (by step)** — no data points yet
+- **All steps: Duration p95 & ConcurrentExecutions (max)** — no data points yet
+- **State Machine executions** — no data points yet
+- **Lambda Errors (by step)** — no data points yet
 
 All panels display "No data available" or empty graphs. This is expected — you have not triggered any executions yet.
 

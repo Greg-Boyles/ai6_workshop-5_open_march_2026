@@ -24,13 +24,15 @@ The exact values for `route`, `route_score`, `priority`, and `action` depend on 
 
 | Step        | Typical Duration | What It Does                                      |
 |-------------|------------------|---------------------------------------------------|
-| Preprocess  | ~5–15 ms         | Validates and cleans the input ticket text         |
-| **Embed**   | **~200–400 ms**  | Runs the ML model (sentence embedding + routing)   |
-| Postprocess | ~5–15 ms         | Applies business rules (priority, action)          |
+| Preprocess  | ~100-200 ms         | Validates and cleans the input ticket text         |
+| **Embed**   | **~300-500 ms**  | Runs the ML model (sentence embedding + routing)   |
+| Postprocess | ~100-200 ms         | Applies business rules (priority, action)          |
+
+These are *typical* durations, and you may see values outside of those given above. There are lots of factors that could affect durations. Try running a few executions by re-running the `./scripts/02_invoke_one.sh` command and see if they generally fall within a small range of values.
 
 ## Answer: Identifying the Model Step
 
-> "The model step is **Embed** because **it has the longest duration (~250 ms vs ~10 ms for pre/post), which is where the ML inference (sentence embedding and route classification) happens**."
+> "The model step is **Embed** because **it has the longest duration, which is where the ML inference (sentence embedding and route classification) happens**."
 
 ## Output JSON Fields
 
@@ -69,6 +71,6 @@ Key observations:
 - [ ] `./scripts/02_invoke_one.sh` reported `SUCCEEDED`
 - [ ] You can see the execution in the Step Functions console
 - [ ] The execution graph shows three green (succeeded) steps
-- [ ] Embed is clearly the slowest step (~200–400 ms)
+- [ ] Embed is clearly the slowest step
 - [ ] Output JSON contains `route`, `route_score`, `priority`, and `action`
 - [ ] You can explain why Embed is the model step

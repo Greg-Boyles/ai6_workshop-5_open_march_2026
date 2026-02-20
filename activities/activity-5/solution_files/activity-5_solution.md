@@ -16,9 +16,9 @@ The Map state is the key orchestration construct. It:
 | Metric | Activity 3 (low concurrency) | Activity 4 (high concurrency) |
 |---|---|---|
 | MaxConcurrency | 2 | 10 |
-| Batch duration | ~15-20 seconds | ~4-7 seconds |
+| Batch duration | ~120-180 seconds | ~35-50 seconds |
 | ConcurrentExecutions | 2 | up to 10 |
-| Items processed | 40 | 40 |
+| Items processed | 500 | 500 |
 
 The high concurrency run processed the same number of items in significantly less time because more items were processed in parallel.
 
@@ -32,6 +32,12 @@ You should see log entries from all three functions: preprocess, embed, and post
 
 ## Task 6 — Query 2 Output
 
+``` sql
+fields step, ticket_id, duration_ms
+| filter ispresent(step) and ispresent(ticket_id) and ispresent(duration_ms)
+| display step, ticket_id, duration_ms
+```
+
 The parsed output should show distinct columns:
 - **step:** preprocess, embed, or postprocess
 - **ticket_id:** the unique ID for each support ticket
@@ -41,13 +47,24 @@ The parsed output should show distinct columns:
 
 ## Task 7 — Query 3 Output (Expected Results)
 
+``` sql
+fields step, duration_ms
+| filter ispresent(step) and ispresent(duration_ms)
+| stats 
+    avg(duration_ms) as avg_duration_ms,
+    max(duration_ms) as max_duration_ms,
+    count(*) as count
+  by step
+| sort step asc
+```
+
 | step | avg_ms | max_ms | n |
 |---|---|---|---|
-| embed | ~250 | ~400 | 40 |
-| preprocess | ~10 | ~25 | 40 |
-| postprocess | ~8 | ~20 | 40 |
+| embed | ~250 | ~300 | 500 |
+| preprocess | ~0.01 | ~0.02 | 500 |
+| postprocess | ~0.03 | ~0.1 | 500 |
 
-The **Embed** step dominates processing time at approximately 250ms on average, compared to roughly 10ms for the other steps. This is expected — embedding involves a model inference call, which is computationally heavier than text preprocessing or result writing.
+The **Embed** step dominates processing time at approximately 250ms on average, compared to roughly <1ms for the other steps. This is expected — embedding involves a model inference call, which is computationally heavier than text preprocessing or result writing.
 
 ---
 
@@ -69,7 +86,6 @@ Without orchestration, all three steps would run inside a single function, makin
 
 ```sql
 fields @timestamp, @message
-| filter @timestamp > ago(15m)
 | parse @message /"step"\s*:\s*"(?<step>[^"]+)"/
 | parse @message /"duration_ms"\s*:\s*(?<duration_ms>\d+)/
 | parse @message /"ticket_id"\s*:\s*"(?<ticket_id>[^"]+)"/

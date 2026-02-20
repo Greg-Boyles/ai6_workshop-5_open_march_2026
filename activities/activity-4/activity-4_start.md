@@ -19,12 +19,12 @@ See [AWS service docs and key quotes](../../docs/aws_service_docs.md).
 
 ## 📝 Task 1 — Run the Same Burst at Higher Concurrency
 
-Run the burst-load script again with the same 40 tickets, but now allow **10 parallel executions**:
+Run the burst-load script again with the same 500 tickets, but now allow **10 parallel executions**:
 
 ⌨️ **Terminal:**
 
 ```bash
-N=40 MAX_CONCURRENCY=10 ./scripts/03_burst_load.sh
+N=500 MAX_CONCURRENCY=10 ./scripts/03_burst_load.sh
 ```
 
 Wait for completion and record the total batch duration.
@@ -38,7 +38,7 @@ Wait for completion and record the total batch duration.
 | Metric              | Your Value |
 |---------------------|------------|
 | Total batch duration |           |
-| Tickets processed    | 40        |
+| Tickets processed    | 500       |
 | Max concurrency      | 10        |
 
 ---
@@ -50,10 +50,10 @@ Fill in the comparison table using your results from Activity 3 and this activit
 | Metric                | MAX_CONCURRENCY=2 | MAX_CONCURRENCY=10 |
 |-----------------------|--------------------|---------------------|
 | Total batch duration  |                    |                     |
-| Tickets processed     | 40                 | 40                  |
+| Tickets processed     | 500                | 500                 |
 | Throughput (tickets/s)|                    |                     |
 
-💡 **Tip:** Calculate throughput as `tickets / duration`. For example: 40 tickets / 17 s = ~2.4 tickets/s vs 40 tickets / 5 s = ~8 tickets/s.
+💡 **Tip:** Calculate throughput as `tickets / duration`. For example: 500 tickets / 126 s = ~4.0 tickets/s vs 500 tickets / 41 s = ~12.2 tickets/s.
 
 ---
 
@@ -85,10 +85,10 @@ In one sentence, explain what changed and why:
 
 Consider this question (discuss with your coach or group):
 
-> "If we went to MAX_CONCURRENCY=40 (one slot per ticket), what would happen? What would be the next bottleneck?"
+> "If we went to MAX_CONCURRENCY=500 (one slot per ticket), what would happen? What would be the next bottleneck?"
 
 Think about:
-- Lambda cold starts when 40 functions spin up simultaneously
+- Lambda cold starts when 500 functions spin up simultaneously
 - AWS account-level Lambda concurrency limits
 - Memory and CPU contention
 - Cost implications
@@ -118,11 +118,11 @@ Try additional concurrency values to find the sweet spot:
 ⌨️ **Terminal:**
 
 ```bash
-N=40 MAX_CONCURRENCY=5 ./scripts/03_burst_load.sh
+N=500 MAX_CONCURRENCY=5 ./scripts/03_burst_load.sh
 ```
 
 ```bash
-N=40 MAX_CONCURRENCY=20 ./scripts/03_burst_load.sh
+N=500 MAX_CONCURRENCY=20 ./scripts/03_burst_load.sh
 ```
 
 Record the results:
