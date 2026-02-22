@@ -28,6 +28,8 @@ The high concurrency run processed the same number of items in significantly les
 
 You should see log entries from all three functions: preprocess, embed, and postprocess. Each entry contains a JSON-structured message with fields like `step`, `ticket_id`, and `duration_ms`.
 
+> ⚠️ **If you see no results:** extend the time filter (top-right of the Logs Insights screen) beyond the default 1h. Your most recent executions may fall outside that window.
+
 ---
 
 ## Task 6 — Query 2 Output
@@ -60,9 +62,11 @@ fields step, duration_ms
 
 | step | avg_ms | max_ms | n |
 |---|---|---|---|
-| embed | ~250 | ~300 | 500 |
-| preprocess | ~0.01 | ~0.02 | 500 |
-| postprocess | ~0.03 | ~0.1 | 500 |
+| embed | ~250 | ~300 | ~1000 |
+| preprocess | ~0.01 | ~0.02 | ~1000 |
+| postprocess | ~0.03 | ~0.1 | ~1000 |
+
+> **Note on n:** By Activity 5 you will have run the burst script twice (Activity 3 and Activity 4), so expect n ≈ 1000 per step. If you want to isolate a single run, narrow the time filter to cover just that execution window.
 
 The **Embed** step dominates processing time at approximately 250ms on average, compared to roughly <1ms for the other steps. This is expected — embedding involves a model inference call, which is computationally heavier than text preprocessing or result writing.
 
@@ -85,11 +89,8 @@ Without orchestration, all three steps would run inside a single function, makin
 ## Extension — Longest Embed Duration Query
 
 ```sql
-fields @timestamp, @message
-| parse @message /"step"\s*:\s*"(?<step>[^"]+)"/
-| parse @message /"duration_ms"\s*:\s*(?<duration_ms>\d+)/
-| parse @message /"ticket_id"\s*:\s*"(?<ticket_id>[^"]+)"/
-| filter step = "embed"
+fields @timestamp, step, ticket_id, duration_ms
+| filter step = "embed" and ispresent(duration_ms)
 | sort duration_ms desc
 | limit 1
 ```
@@ -104,4 +105,4 @@ This query filters to only embed steps, sorts by duration descending, and return
 - [ ] Query 3 shows Embed with the highest avg_ms (~250ms)
 - [ ] I can explain why orchestration provides better visibility than a monolithic function
 - [ ] I understand what MaxConcurrency controls
-- [ ] I can write a Logs Insights query using `parse` and `stats`
+- [ ] I can write a Logs Insights query using `fields`, `filter`, and `stats`

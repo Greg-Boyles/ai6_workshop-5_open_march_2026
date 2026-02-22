@@ -25,19 +25,17 @@ fields @timestamp, @message
 
 ## 2) Extract the structured JSON fields we log
 ```sql
-fields @timestamp, @message
-| parse @message /"step"\s*:\s*"(?<step>[^"]+)"/
-| parse @message /"duration_ms"\s*:\s*(?<duration_ms>\d+)/
-| parse @message /"ticket_id"\s*:\s*"(?<ticket_id>[^"]+)"/
-| display @timestamp, step, ticket_id, duration_ms, @message
+fields @timestamp, step, ticket_id, duration_ms
+| filter ispresent(step) and ispresent(ticket_id) and ispresent(duration_ms)
 | sort @timestamp desc
 ```
 
+> CloudWatch automatically parses JSON log messages, so you can reference fields like `step` directly without regex.
+
 ## 3) Average + max duration by step
 ```sql
-fields @timestamp, @message
-| parse @message /"step"\s*:\s*"(?<step>[^"]+)"/
-| parse @message /"duration_ms"\s*:\s*(?<duration_ms>\d+)/
+fields step, duration_ms
+| filter ispresent(step) and ispresent(duration_ms)
 | stats avg(duration_ms) as avg_ms, max(duration_ms) as max_ms, count(*) as n by step
 | sort avg_ms desc
 ```
@@ -50,8 +48,3 @@ fields @timestamp, @message
 | limit 50
 ```
 
-### Where throttling shows up (quick reminder)
-For this workshop, throttling evidence is most obvious in:
-- **CloudWatch metric:** Embed Lambda → **Throttles**
-- **User impact:** rising Duration p95 (“latency wall”)
-- **Step Functions behaviour:** retries/backoff (executions may still succeed)
