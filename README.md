@@ -1,14 +1,18 @@
 # Workshop 5: Orchestrating Complex ML Pipelines in Production
 
-## AWS Docs (Core Services)
+## Cloud Service Docs (Core Services)
 
 See [AWS service docs and key quotes](docs/aws_service_docs.md).
 
-As you grow into the role of an ML Engineer, becoming comfortable with seeking out and reading high‑quality documentation isn't just a useful habit, it's an essential professional skill.
+As you grow into the role of an ML Engineer, becoming comfortable with seeking out and reading official documentation is an essential professional skill — not just for AWS, but for whichever cloud platform you work on.
 
-AWS's official documentation is actively maintained, continuously updated to reflect new features and service changes, and rigorously reviewed by AWS experts, making it the most reliable place to understand how cloud and AI tooling really works in practice. Relying on outdated or third‑party sources can lead to misunderstandings, because archived or unofficial materials often lag behind current service behaviour and may no longer be accurate as AWS evolves. 
+Official cloud provider documentation is actively maintained, updated to reflect new features and service changes, and reviewed by the teams who build those services. Relying on outdated or third-party sources can lead to misunderstandings, because unofficial materials often lag behind current service behaviour.
 
-By developing the confidence to navigate and interpret authoritative documentation, you strengthen your ability to troubleshoot effectively, make informed design decisions, and stay aligned with industry best practices; key capabilities for any ML Engineer building robust, production‑ready solutions.
+Whether you primarily work with AWS or GCP, the core patterns you practise here — deploying managed services, observing them with monitoring tools, and tuning orchestration — transfer directly. The specific service names and console layouts differ, but the thinking is the same.
+
+By developing the habit of navigating and interpreting authoritative documentation, you strengthen your ability to troubleshoot effectively, make informed design decisions, and stay aligned with industry best practices.
+
+> **Going further:** If you want to understand how the AWS services used in this workshop map onto their GCP counterparts, the [AWS, Azure, and GCP service comparison](https://docs.cloud.google.com/docs/get-started/aws-azure-gcp-service-comparison) is a useful reference. Search for each service (Lambda, Step Functions, CloudWatch, CloudFormation) and find its equivalent — you may find there is more than one, which itself tells you something about how the platforms differ in their design philosophy. Reading the equivalent service's documentation is a good way to deepen your understanding of both platforms.
 
 ## Scale or Fail
 
@@ -41,6 +45,18 @@ Useful links:
 - [Step Functions Map state / concurrency](https://docs.aws.amazon.com/step-functions/latest/dg/state-map.html)
 - [Lambda concurrency controls](https://docs.aws.amazon.com/lambda/latest/dg/configuration-concurrency.html)
 - [Pluralsight AWS sandbox limits](https://help.pluralsight.com/hc/en-us/articles/24425443133076-AWS-cloud-sandbox)
+
+---
+
+## Where This Fits in the ML Lifecycle
+
+The earlier AI6 workshops focused on the upstream phases of [CRISP-ML(Q)](https://ml-ops.org/content/crisp-ml): business and data understanding, data engineering, model training, and model evaluation. This workshop picks up at the end of that journey.
+
+Once a model passes evaluation, it enters the **Deployment** phase — integration into a live software system — and then the **Monitoring and Maintenance** phase, where you continuously observe its behaviour in production, detect degradation, and respond to incidents. This workshop gives you hands-on practice with both: you deploy the pipeline, stress-test it, observe it with metrics and logs, and apply structured Root Cause Analysis when things go wrong.
+
+This maps directly to [**Duty 6** of the Machine Learning Engineer apprenticeship standard](https://skillsengland.education.gov.uk/apprenticeships/st1398-v1-0?view=standard): *"Deliver responsive technical engineering support services; to mitigate operational impact whilst ensuring business continuity."*
+
+The "model step" in this workshop is intentionally simulated so you can focus on the operational patterns rather than model training. If you want to see what those same patterns look like with a real managed inference endpoint, [Activity 9 (Going Further)](activities/activity-9-going-further/activity-9_start-going-further.md) makes that connection concrete.
 
 ---
 
@@ -89,7 +105,7 @@ By the end of this workshop you will be able to:
 
 ## Workshop Structure
 
-Read the [User Brief](user_brief.md) first to understand the scenario. You may also wish to look ahead to [Activity 8](activities/activity-8/activity-8_start.md), Task 1 because it requires you to gather screenshots from previous activities. There's no harm in repeating previous activities (and, in fact, some benefit), but you may wish to proceed with your eyes open!
+Read the [User Brief](user_brief.md) first to understand the scenario. You may also wish to look ahead to [Activity 8](activities/activity-8/activity-8_start.md) before starting Task 1 because it requires you to gather screenshots from previous activities. There's no harm in repeating previous activities (and, in fact, some benefit), but you may wish to proceed with your eyes open!
 
 ### Scaling is the Job
 
@@ -126,6 +142,52 @@ You will have met these prerequisites by engaging with previous workshops.
 - Comfort with running shell commands in a terminal
 
 See the [Setup Guide](docs/setup_guide.md) for environment preparation.
+
+---
+
+## From Commands to Scripts
+
+In the previous workshop you deployed Azure infrastructure by copying individual
+`az` CLI commands into the terminal one at a time. That works, but this workshop
+takes the next step: the AWS CLI commands are bundled into shell scripts in the
+[`scripts/`](scripts/) folder.
+
+Instead of pasting a sequence of commands manually, you run a single script and
+it handles the sequence for you — setting variables, running the AWS CLI calls in
+the right order, and printing output so you can see what happened.
+
+This pattern is a core technique in engineering teams, though not the only one — in the previous workshop you used Bicep for this on Azure, and in this workshop CloudFormation plays the same role. Tools like these handle the infrastructure declaration, while scripts handle the invocation. Deployment steps, pipeline invocations, and teardown procedures live in scripts because they are:
+
+- **Repeatable** — the same script run by any engineer produces the same result
+- **Auditable** — the script is the documentation as well as the automation
+- **Extensible** — a script is the seed of a CI/CD pipeline or runbook
+
+You will not need to write scripts in this workshop, but you are encouraged to
+open them and read them. The commands inside are real AWS CLI calls, and
+understanding what they do (not just that they work) is part of the job.
+
+**Looking up a command in the AWS CLI reference**
+
+The [AWS CLI reference](https://docs.aws.amazon.com/cli/latest/reference/) is
+structured by service. To look up any command, navigate to the service name and
+then the subcommand.
+
+For example, the first script, [`scripts/01_deploy.sh`](scripts/01_deploy.sh),
+runs:
+
+```bash
+aws cloudformation deploy \
+  --stack-name "$STACK_NAME" \
+  --template-file "$TEMPLATE_FILE" \
+  --capabilities CAPABILITY_NAMED_IAM \
+  --parameter-overrides ...
+```
+
+In the reference, this lives under [cloudformation → deploy](https://docs.aws.amazon.com/cli/latest/reference/cloudformation/deploy.html). There you can see that `--capabilities
+CAPABILITY_NAMED_IAM` is an explicit acknowledgement that the template creates
+IAM resources with custom names — AWS requires you to opt in to this rather than
+letting it happen silently. Knowing that turns a flag you might have ignored into
+a safety design decision you can reason about.
 
 ---
 
