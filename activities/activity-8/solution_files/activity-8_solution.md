@@ -7,8 +7,8 @@
 Your portfolio should contain at minimum these artefacts:
 
 1. **Happy path execution graph (Activity 2):** Shows all three steps (Preprocess > Embed > Postprocess) completing successfully in sequence within the Map state.
-2. **CloudWatch "wall" dashboard (Activity 3):** Shows ConcurrentExecutions capped at 2, with batch duration of ~15-20 seconds. The "wall" is visible as a flat line on the concurrency metric.
-3. **CloudWatch after-fix dashboard (Activity 4):** Shows ConcurrentExecutions rising to 10, with batch duration dropping to ~4-7 seconds.
+2. **CloudWatch "wall" dashboard (Activity 3):** Shows ConcurrentExecutions capped at 2, with batch duration of ~120-180 seconds. The "wall" is visible as a flat line on the concurrency metric.
+3. **CloudWatch after-fix dashboard (Activity 4):** Shows ConcurrentExecutions rising to 10, with batch duration dropping to ~35-50 seconds.
 4. **FAILED execution (Activity 6):** Shows the Preprocess step in red, with a PayloadTooLarge error.
 5. **Logs Insights output (Activity 5):** Shows the aggregate stats query with Embed having the highest avg_ms.
 6. **RCA Tree classification (Activity 6):** BAD INPUT classification with reasoning for ruling out the other three leaves.
