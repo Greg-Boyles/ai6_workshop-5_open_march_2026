@@ -19,8 +19,8 @@ The pipeline is slow because MaxConcurrency is set to 2, meaning only 2 tickets 
 **Completed fishbone:**
 
 1. **Which bone does your evidence point to?** Bone 1 — Limits / Throttling
-2. **What specific metric or log proves it?** CloudWatch ConcurrentExecutions metric shows a flat line at 2. The Step Functions Map state has MaxConcurrency=2. 50 items are queued but only 2 process at a time, creating a serial bottleneck.
-3. **What is one safe, reversible action to restore service?** Increase MaxConcurrency from 2 to 10. This is safe because it can be reverted immediately, and 10 is well within Lambda account concurrency limits.
+2. **What specific metric or log proves it?** CloudWatch ConcurrentExecutions metric shows a flat line at 2. The Step Functions Map state has MaxConcurrency=2. 500 items are queued but only 2 process at a time, creating a serial bottleneck.
+3. **What is one safe, reversible action to restore service?** Increase MaxConcurrency from 2 to 10. This is safe because it can be reverted immediately, and 10 is within the Lambda account concurrency limit for this environment.
 
 **Why not the other bones?**
 
