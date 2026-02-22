@@ -55,7 +55,11 @@ When the script finishes, it prints a summary. Record the total duration:
 2. Look at the following widgets:
    - **Embed Duration p95** — how long is each Embed invocation taking?
    - **ConcurrentExecutions** — does it plateau at 2?
-3. Notice the pattern: tickets are queuing up because only 2 can run at once.
+3. Notice the pattern: ConcurrentExecutions is flat at 2 — the chart shows the ceiling directly. From that you can *infer* that any additional tickets must wait their turn; the queuing itself is not visible, but it is the logical consequence of the cap.
+
+💡 **Tip:** The combined widget uses **two y-axes**: duration (ms) on the left, and ConcurrentExecutions on the right. The ConcurrentExecutions line reads against the right axis — so a flat line that appears mid-chart is actually sitting at 2, not at whatever the left axis says at that height. If you are unsure which line is which, hover over any line to reveal a tooltip identifying it.
+
+📘 **Why so few data points?** The widget is configured with a **60-second period** — each point on the chart aggregates all invocations within that minute. Duration shows the p95 across those invocations; ConcurrentExecutions shows the maximum reached (hence "(max)" in the widget title). 500 tickets running over ~70 seconds will produce just 2–3 data points, which is expected. You can see exactly how this is defined in [`infra/ai6_u5w_scale_or_fail.yaml`](../../infra/ai6_u5w_scale_or_fail.yaml) — search for `"All steps: Duration p95"`.
 
 💡 **Tip:** The dashboard may take **1–2 minutes** to update after the burst completes. Refresh the page if metrics appear stale.
 
@@ -67,47 +71,58 @@ When the script finishes, it prints a summary. Record the total duration:
 
 ## 📝 Task 4 — Complete the Scaling Map
 
-Work through the Scaling Map exercise below. This helps you systematically identify which part of the pipeline to scale.
+Work through the Scaling Map exercise below. Writing your answers in your own words — even briefly — forces you to articulate what you actually understand, which is different from recognising a correct answer when you see one.
 
-### Step 1 — Name the 3 pipeline steps
+📘 **Note on the scaling knob:** In this workshop, the effective scaling knob for all three steps is the **Step Functions Map `max_concurrency`** setting — because the three steps run sequentially within each Map iteration, this single setting governs how many complete pipeline runs happen in parallel. Each Lambda *could* be scaled independently in AWS, but that's not the knob being turned here. Write it in your own words anyway — making it concrete is the point.
 
-1. **_______________**
-2. **_______________**
-3. **_______________**
-
-### Step 2 — For each step, answer the 3 questions
+💡 For the failure question, you are speculating — use the hint to reason from what you know so far. You will see some of these failure modes for real in later activities.
 
 #### Preprocess (pre-model)
-- **A) What does this step do?**
+- **What does this step do?**
   _Your answer:_
 
-- **B) What scaling knob exists?**
+- **What is the scaling knob?**
   _Your answer:_
 
-- **C) What does failure under load look like?**
+- **Speculate: what might failure under load look like?**
   _Your answer:_
+
+  <details>
+  <summary>Hint</summary>
+  This step validates and cleans input. Think about what happens if a ticket arrives with unexpected or oversized data.
+  </details>
 
 #### Embed / Model (inference)
-- **A) What does this step do?**
+- **What does this step do?**
   _Your answer:_
 
-- **B) What scaling knob exists?**
+- **What is the scaling knob?**
   _Your answer:_
 
-- **C) What does failure under load look like?**
+- **Speculate: what might failure under load look like?**
   _Your answer:_
+
+  <details>
+  <summary>Hint</summary>
+  This step runs an ML model — it is compute-intensive. Think about what happens to duration as more requests pile up, and what Lambda does when it cannot keep up with demand.
+  </details>
 
 #### Postprocess (post-model)
-- **A) What does this step do?**
+- **What does this step do?**
   _Your answer:_
 
-- **B) What scaling knob exists?**
+- **What is the scaling knob?**
   _Your answer:_
 
-- **C) What does failure under load look like?**
+- **Speculate: what might failure under load look like?**
   _Your answer:_
 
-### Step 3 — Decide: which step do you scale FIRST?
+  <details>
+  <summary>Hint</summary>
+  This step applies business rules and may call external services. Think about what happens if those dependencies are slow or unavailable under load.
+  </details>
+
+### Decide: which step do you scale FIRST?
 
 Pick the step that is both:
 1. **Slowest** (duration p95)
@@ -128,16 +143,16 @@ Write 2–3 sentences referencing specific metrics from the dashboard.
 <details>
 <summary><strong>Hint: what you should observe</strong></summary>
 
-- With `MAX_CONCURRENCY=2`, the pipeline should feel like it is “queueing” work: the batch duration is noticeably longer than a single execution.
-- On the dashboard, **ConcurrentExecutions** should flatten at (or near) your configured concurrency, and the Embed step should be the most time-consuming per item.
+- With `MAX_CONCURRENCY=2`, the batch duration will be noticeably longer than a single execution — only 2 iterations can run at once, so the rest must wait.
+- On the dashboard, **ConcurrentExecutions** should flatten at (or near) 2. This is the evidence; the waiting is what you infer from it.
 
 </details>
 
 <details>
 <summary><strong>Example answer (optional)</strong></summary>
 
-- "The bottleneck is **Embed**, because it has the highest duration and the system can only process **2 items in parallel** (ConcurrentExecutions plateaus), so items wait their turn."
-- "I would scale **Embed** first because it dominates the per-item latency and controls overall throughput under a Map state."
+- "The bottleneck is **Embed**, because it has the highest Duration p95 and ConcurrentExecutions plateaus at 2 — the ceiling is visible in the chart, from which we can infer that additional tickets must wait their turn."
+- "I would scale **Embed** first because it dominates per-item latency and `max_concurrency` on the Map state controls how many pipeline iterations run in parallel."
 
 </details>
 
