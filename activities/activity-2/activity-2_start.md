@@ -106,7 +106,7 @@ The fields are:
 
 ## 🚀 Extension
 
-1. Navigate to **CloudWatch** > **Log groups**.
+1. Navigate to **CloudWatch** > **Logs** > **Log Management** > **Log groups**.
 2. Find the log group for the Embed function (it will contain `Embed` in the name).
 3. Open the most recent log stream and read a structured log entry.
 4. What information does the Embed function log? (e.g. input length, model load time, inference time)

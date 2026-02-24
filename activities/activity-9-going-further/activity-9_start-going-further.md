@@ -6,9 +6,11 @@
 
 ## Prerequisite: Start an AWS AI Sandbox
 
-This activity requires SageMaker permissions. Start an **AWS AI Sandbox** in Pluralsight:
+This activity requires SageMaker permissions and runs in a **separate sandbox** from the main workshop. Start an **AWS AI Sandbox** in Pluralsight:
 
 `https://app.pluralsight.com/hands-on/playground/ai-sandboxes`
+
+Because this is a fresh environment, you will need to repeat the environment setup before running Task 1. Follow **Steps 1–4** of the [setup guide](../../../docs/setup_guide.md) (start sandbox, open CloudShell, upload and unzip the workshop files, set your region). You do **not** need to run `./scripts/01_deploy.sh` — Task 1 below uses its own deploy script instead.
 
 ## Context: “Workshop Pipeline” vs “ML Pipeline”
 
@@ -65,6 +67,8 @@ SAGEMAKER_MAX_CONCURRENCY=2 \
 ./activities/activity-9-going-further/aws/sagemaker-embed/scripts/deploy.sh
 ```
 
+💡 **Tip:** If you see `Permission denied`, the script is not yet executable. You've solved this before — check the troubleshooting section of the [setup guide](../../../docs/setup_guide.md) for the pattern, and adapt the path to match this script's location.
+
 ✅ **Checkpoint:** The deploy finishes and prints stack outputs.
 
 ---
@@ -86,18 +90,22 @@ WORKSHOP_NAME=AI6-Unit5W-ScaleOrFail-gf-sagemaker \
 
 ## 📝 Task 3 — Observe the “New Bottleneck Surface Area”
 
+In Activities 3 and 7, the throttle was at the **orchestrator level** — the Step Functions Map state. Now Embed calls a SageMaker endpoint, which has its own concurrency cap. Before running the commands below, read the AWS docs on what happens when that cap is exceeded:
+
+> [AWS SageMaker Serverless Inference — endpoint concurrency](https://docs.aws.amazon.com/sagemaker/latest/dg/serverless-endpoints.html)
+
 💻 **Console:**
 
 1. Open the Step Functions execution graph for your variant state machine.
 2. Open the CloudWatch dashboard output for the variant stack.
 3. Compare:
    - Previously: Embed was `AWS/Lambda` Duration and concurrency
-   - Now: Embed is `AWS/SageMaker` endpoint metrics (for example, ModelLatency)
+   - Now: Embed is `AWS/SageMaker` endpoint metrics (for example, `ModelLatency`, `Invocations`)
 
-⌨️ **Optional terminal (make the bottleneck visible):**
+⌨️ **Optional terminal (make the throttle visible):**
 
 ```bash
-# This should usually succeed (matches the endpoint serverless MaxConcurrency=2).
+# This should usually succeed (matches the endpoint MaxConcurrency=2).
 WORKSHOP_NAME=AI6-Unit5W-ScaleOrFail-gf-sagemaker \
 N=10 MAX_CONCURRENCY=2 \
 ./scripts/03_burst_load.sh
@@ -111,6 +119,24 @@ N=10 MAX_CONCURRENCY=4 \
 Write 2–3 sentences:
 - What changed operationally when moving “model inference” onto SageMaker?
 - What scaling knob(s) now exist at the endpoint layer?
+- How does a throttled SageMaker endpoint behave differently from the throttling in Activities 3 and 7 — and which Fishbone bone does each map to?
+
+<details>
+<summary><strong>Hint: what you should observe</strong></summary>
+
+- When `MAX_CONCURRENCY=4` exceeds the endpoint cap, look at how the Step Functions execution status differs from what you saw in Activities 3 and 7 when the Map state was the bottleneck.
+- Pay attention to whether executions **slow down** or **fail outright**.
+
+</details>
+
+<details>
+<summary><strong>Example answer (optional)</strong></summary>
+
+- **What changed:** “Embed is now a network call to a managed endpoint rather than an in-process Lambda call. The latency source is now `ModelLatency` on the SageMaker side, and a new failure mode appears if the endpoint's concurrency cap is exceeded.”
+- **Scaling knobs:** “The endpoint's `MaxConcurrency` controls how many simultaneous invocations it accepts. Raising it increases throughput; exceeding it causes throttling errors.”
+- **Contrast with Activities 3 & 7:** “In Activities 3 and 7, exceeding `max_concurrency` on the Map state caused work to **queue silently** — everything still succeeded, just more slowly (**Bone 1: Limits/Throttling** within our own infrastructure). Here, exceeding the SageMaker endpoint's `MaxConcurrency` causes invocations to be **rejected** — executions fail rather than wait (**Bone 3: Dependencies** — a cap imposed by an external service). The fix is the same idea at a different layer: raise the relevant `MaxConcurrency` parameter.”
+
+</details>
 
 ---
 
@@ -124,3 +150,32 @@ WORKSHOP_NAME=AI6-Unit5W-ScaleOrFail-gf-sagemaker \
 ```
 
 ✅ **Checkpoint:** Stack delete completes.
+
+---
+
+## 🚀 Extension — Map the Workshop to Your Cloud of Choice
+
+A senior engineer recognises the *kind* of resource, not just its AWS name. If you were asked to build this same pipeline on Azure or GCP tomorrow, would you know where to start?
+
+Cloud platforms don't always carve up functionality the same way. What AWS packages as one service might be split across two on Azure, or combined differently on GCP. The mapping won't always be 1:1 — and noticing *where* it isn't is part of the exercise.
+
+Using the [AWS, Azure, and GCP service comparison](https://docs.cloud.google.com/docs/get-started/aws-azure-gcp-service-comparison) linked in the README, look up each service used in this workshop and fill in the equivalents for your chosen cloud yourself:
+
+| Workshop Resource | What it does | Your cloud equivalent |
+|---|---|---|
+| AWS Lambda | | |
+| Step Functions (Map state) | | |
+| CloudWatch Logs | | |
+| CloudWatch Logs Insights | | |
+| CloudWatch Dashboard | | |
+| CloudFormation | | |
+| SageMaker endpoint *(if you did Activity 9)* | | |
+
+Then, using [draw.io](https://app.diagrams.net) (free, browser-based, no account needed):
+
+1. Pick Azure or GCP
+2. Draw the three-step pipeline (Preprocess → Embed → Postprocess) using that cloud's service icons — draw.io has built-in icon sets for both
+3. Add the orchestration layer and the observability layer
+4. Export as PNG and save it alongside your Activity 8 portfolio screenshots
+
+✅ **Checkpoint:** Your diagram shows the same logical architecture as the workshop, using a different cloud's services and naming.

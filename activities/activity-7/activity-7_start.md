@@ -18,6 +18,18 @@ See [AWS service docs and key quotes](../../docs/aws_service_docs.md).
 
 ---
 
+## Context — A Different Kind of Failure
+
+In Activity 6 you classified a **BAD INPUT** failure: a single oversized payload that failed immediately, before any load was applied. That was a data quality issue — nothing to do with capacity.
+
+This activity is a different failure mode. The pipeline is healthy and the data is valid, but **too many items arrive at once**. The bottleneck is throughput, not data. You will:
+
+1. Use the RCA Tree again — but this time reach a different leaf (THROTTLED)
+2. Apply the **Fishbone** framework to structure your diagnostic reasoning
+3. **Apply the fix and verify** — measure the before/after improvement
+
+---
+
 ## 📝 Task 1 — Recall or Re-run the Burst Test
 
 Recall the burst test from Activity 3, where you ran 500 tickets with low concurrency. If you need to re-run it:
@@ -160,7 +172,7 @@ Complete the following incident report:
 ---
 
 🚀 **Extension:** If you increased MAX_CONCURRENCY to 500, what would be the next bottleneck? Think about:
-- Lambda account-level concurrency limits (default: 1000 across all functions)
+- Lambda account-level concurrency limits (default: 1,000 across all functions — though note the Pluralsight sandbox caps this at 10, so even MAX_CONCURRENCY=11 would fail here with a `TooManyRequestsException`)
 - Cold starts when many new execution environments spin up at once
 - Whether the embed model API could handle 500 simultaneous requests
 

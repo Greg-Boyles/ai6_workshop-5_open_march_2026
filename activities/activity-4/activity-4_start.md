@@ -113,16 +113,12 @@ Think about:
 
 ## 🚀 Extension
 
-Try additional concurrency values to find the sweet spot:
+Try an intermediate concurrency value to see how throughput scales:
 
 ⌨️ **Terminal:**
 
 ```bash
 N=500 MAX_CONCURRENCY=5 ./scripts/03_burst_load.sh
-```
-
-```bash
-N=500 MAX_CONCURRENCY=20 ./scripts/03_burst_load.sh
 ```
 
 Record the results:
@@ -132,9 +128,10 @@ Record the results:
 | 2               |          |                        |
 | 5               |          |                        |
 | 10              |          |                        |
-| 20              |          |                        |
 
 At what point do returns start to diminish?
+
+⚠️ **Sandbox limit:** The Pluralsight AWS sandbox restricts account-level Lambda concurrency to **10**. Do not exceed `MAX_CONCURRENCY=10` — values above this will cause executions to fail with a `TooManyRequestsException` (429). In a standard AWS account the default limit is 1,000 — see [Lambda quotas](https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-limits.html#compute-and-storage). You can check your current limit at any time with `aws lambda get-account-settings`.
 
 ---
 

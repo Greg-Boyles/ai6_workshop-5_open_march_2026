@@ -15,7 +15,7 @@ This workshop uses the **AWS Cloud Sandbox** provided via Pluralsight.
 ## Step 1: Start Your Sandbox
 
 1. Sign into Pluralsight
-1. Navigate to "Hands On" and start an **AWS Cloud Sandbox**
+1. Navigate to "Hands On" and start an **AWS Cloud Sandbox** https://app.pluralsight.com/hands-on/playground/cloud-sandboxes
 3. Open your sandbox in a private browsing window and use the provided temporary credentials to login.
 
 ---

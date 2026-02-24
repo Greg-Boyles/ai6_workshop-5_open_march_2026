@@ -31,53 +31,45 @@ Why so slow? With only 2 parallel slots, the pipeline processes tickets roughly 
 
 ## Completed Scaling Map
 
-### Step 1 — Name the 3 pipeline steps
-
-1. **Preprocess**
-2. **Embed**
-3. **Postprocess**
-
-### Step 2 — For each step, answer the 3 questions
-
 #### Preprocess (pre-model)
-- **A) What does this step do?**
+- **What does this step do?**
   Validates and cleans the input ticket text so downstream steps receive safe, well-formed data.
 
-- **B) What scaling knob exists?**
-  Lambda concurrency (horizontal scaling) and memory/CPU per invocation (vertical scaling).
+- **What is the scaling knob?**
+  The Step Functions Map `max_concurrency` setting — it controls how many pipeline iterations run in parallel, and therefore how many Preprocess invocations run at once.
 
-- **C) What does failure under load look like?**
-  Input validation errors, schema mismatches, CPU spikes (rare — this step is lightweight).
+- **Speculate: what might failure under load look like?**
+  Failures here are more likely to be data-related than capacity-related — for example, a ticket with an oversized or malformed payload causing an immediate validation error.
 
 #### Embed / Model (inference)
-- **A) What does this step do?**
+- **What does this step do?**
   Converts the ticket text into a semantic vector representation (sentence embedding) and classifies the support route.
 
-- **B) What scaling knob exists?**
-  Lambda concurrency (horizontal) and memory/CPU per invocation (vertical). This is usually the bottleneck because the ML model is compute-intensive.
+- **What is the scaling knob?**
+  The Step Functions Map `max_concurrency` setting — same knob as the other steps, but Embed feels it most because it is the slowest step in each iteration.
 
-- **C) What does failure under load look like?**
-  Throttling, long durations, timeouts, cold starts, memory pressure / out-of-memory errors.
+- **Speculate: what might failure under load look like?**
+  Long durations, throttling, timeouts, cold starts, or memory pressure as more requests pile up than Lambda can serve concurrently.
 
 #### Postprocess (post-model)
-- **A) What does this step do?**
+- **What does this step do?**
   Applies business rules (priority assignment, action recommendation) and formats the final response.
 
-- **B) What scaling knob exists?**
-  Lambda concurrency, but this step is fast. In real systems it can become a dependency bottleneck if it calls external services.
+- **What is the scaling knob?**
+  The Step Functions Map `max_concurrency` setting — same knob, but this step is so fast it rarely becomes the constraint.
 
-- **C) What does failure under load look like?**
-  Slow dependency symptoms (timeouts to downstream APIs), retries, message backlogs.
+- **Speculate: what might failure under load look like?**
+  If this step calls external services, slow or unavailable dependencies could cause timeouts, retries, or message backlogs under load.
 
-### Step 3 — Which step to scale first?
+### Decide: which step do you scale FIRST?
 
-> "I would scale **Embed** first because **it has the highest p95 duration (~250 ms vs ~1 ms for other steps) and is the compute-intensive ML inference step. The ConcurrentExecutions metric confirms it is the constraint — only 2 can run at a time, creating a queue**."
+> "I would scale **Embed** first because **it has the highest p95 duration (~250 ms vs ~1 ms for other steps) and is the compute-intensive ML inference step. The ConcurrentExecutions metric confirms it is the constraint — only 2 can run at a time, so additional tickets must wait their turn**."
 
 ---
 
 ## Bottleneck Answer
 
-> "The bottleneck is the **Embed** step. Evidence: (1) ConcurrentExecutions plateaus at exactly 2, meaning tickets are queuing rather than running in parallel. (2) Embed Duration p95 is ~250 ms, which is hundreds of times longer than Preprocess or Postprocess. (3) The total batch time (~126s s) closely matches the theoretical minimum of 500 tickets / 2 concurrency * ~500 ms per execution."
+> "The bottleneck is the **Embed** step. Evidence: (1) ConcurrentExecutions plateaus at exactly 2 — the chart shows the ceiling directly, from which we can infer that additional tickets must wait their turn. (2) Embed Duration p95 is ~250 ms, which is hundreds of times longer than Preprocess or Postprocess. (3) The total batch time (~126s) closely matches the theoretical minimum of 500 tickets / 2 concurrency * ~500 ms per execution."
 
 ---
 
