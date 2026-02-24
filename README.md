@@ -183,12 +183,10 @@ aws cloudformation deploy \
   --parameter-overrides ...
 ```
 
-In the reference, this lives under [cloudformation → deploy](https://docs.aws.amazon.com/cli/latest/reference/cloudformation/deploy.html). There you can see that `--capabilities
-CAPABILITY_NAMED_IAM` is an explicit acknowledgement that the template creates
+In the reference, this lives under [cloudformation → deploy](https://docs.aws.amazon.com/cli/latest/reference/cloudformation/deploy.html). There you can see that the `--capabilities CAPABILITY_NAMED_IAM` flag is an explicit acknowledgement that the template creates
 IAM resources with custom names — AWS requires you to opt in to this rather than
 letting it happen silently. Knowing that turns a flag you might have ignored into
 a safety design decision you can reason about.
-
 ---
 
 ## Key Resources
