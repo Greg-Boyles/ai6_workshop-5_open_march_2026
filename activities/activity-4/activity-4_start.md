@@ -37,7 +37,7 @@ Wait for completion and record the total batch duration.
 
 | Metric              | Your Value |
 |---------------------|------------|
-| Total batch duration |           |
+| Total batch duration |     .31      |
 | Tickets processed    | 500       |
 | Max concurrency      | 10        |
 
@@ -49,7 +49,7 @@ Fill in the comparison table using your results from Activity 3 and this activit
 
 | Metric                | MAX_CONCURRENCY=2 | MAX_CONCURRENCY=10 |
 |-----------------------|--------------------|---------------------|
-| Total batch duration  |                    |                     |
+| Total batch duration  |   2.23                 |       .31              |
 | Tickets processed     | 500                | 500                 |
 | Throughput (tickets/s)|                    |                     |
 
