@@ -51,7 +51,7 @@ Fill in the comparison table using your results from Activity 3 and this activit
 |-----------------------|--------------------|---------------------|
 | Total batch duration  |   2.23                 |       .31              |
 | Tickets processed     | 500                | 500                 |
-| Throughput (tickets/s)|                    |                     |
+| Throughput (tickets/s)|       3.5             |       16.1              |
 
 💡 **Tip:** Calculate throughput as `tickets / duration`. For example: 500 tickets / 126 s = ~4.0 tickets/s vs 500 tickets / 41 s = ~12.2 tickets/s.
 
